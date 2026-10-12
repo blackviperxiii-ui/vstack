@@ -1,56 +1,52 @@
-# vstack — Viper Stack
+# Viper Stack (vstack)
 
-Token-efficient adaptation of [poteto's pstack](https://github.com/cursor/plugins/tree/main/pstack) skills for Cursor.
+Token-efficient rigorous engineering skills for Cursor and other agents.
 
-Keeps **all the rigor and value** of the original playbooks, principles, verification, how/why, etc., while defaulting to Auto mode or Composer 2.5 Standard so limited token allowances last longer.
+**Credit:** Method and playbooks adapted from Lauren Tan (@poteto)'s pstack. All branding and naming is Viper Stack from here on. Original: https://github.com/cursor/plugins/tree/main/pstack
 
-## Why
+## What this is
 
-Original pstack defaults lean hard into expensive models (e.g. grok-4.7-xhigh-fast). This config overrides that via the official model rule mechanism so subagents inherit the parent chat model.
+A reworked, self-contained set of agent skills that keep the rigor (playbooks, principles, verification-first, how/why, sequence into verifiable units, smallest change) while defaulting to **Auto** or **Composer 2.5 Standard** so limited token allowances last longer.
 
-## Quick Start
+- Prefer Auto / inherit-parent for subagents
+- Reduced multi-model panels (sequential or single by default)
+- Stronger context-window and laziness guards
+- Medium/small reasoning budget preferred
+- Fresh subagents, summaries only in parent
 
-1. In a Cursor chat:
-   ```
-   /add-plugin pstack
-   ```
+## Install
 
-2. Copy the contents of [`pstack-models.mdc`](./pstack-models.mdc) into `~/.cursor/rules/pstack-models.mdc` on your machine.
+### Cursor
+Drop the `skills/` folder into `.cursor/skills/` (project) or `~/.cursor/skills/` (global).
 
-   Or run `/setup-pstack` and choose **auto** for every role + **medium** or **small** budget.
+Then in chat:
+```
+/viper-mode <your goal>
+```
 
-3. In the model picker, set your main chat to:
-   - **Auto** (Cost or Balance recommended for limited tokens), **or**
-   - **Composer 2.5** with Fast turned **OFF** (Standard tier).
+Or set it as a custom mode.
 
-4. Start a fresh chat so the rule loads, then use `/poteto-mode` as usual.
+### Other agents (Claude Code, Codex, etc.)
+```
+npx skills add blackviperxiii-ui/vstack --skill viper-mode
+```
 
-## The Config
+## Core skill
 
-See [`pstack-models.mdc`](./pstack-models.mdc).
+- **viper-mode**: The main router. Matches the task to a playbook, builds a todo list, applies principles, delegates efficiently, and demands evidence before claiming done.
 
-It sets almost every role to `auto` (or `inherit-parent`), which omits the explicit model on Task subagents so they follow the parent. Panels are single-entry to avoid multi-model token multipliers while still getting the verification value of the playbooks.
+## Efficiency defaults (baked in)
 
-Budget is set to medium (high). Change the comment to `small` if you want even lower spend.
+- Models: auto / inherit parent (set parent to Auto or Composer 2.5 Standard with Fast off)
+- Budget: medium preferred
+- Panels: single-model sequential unless high-stakes
+- Context: bulk work to subagents, summaries only in main thread
+- Bias: smallest change that meets the criteria; stop early when good enough
 
-## Why This Still Preserves Full Value
+## Expand later
 
-- All 23 playbooks and principles (laziness protocol, guard-the-context-window, prove-it-works, sequence-verifiable-units, etc.) remain unchanged.
-- You still get rigorous, evidence-based engineering work.
-- Existing efficiency principles are amplified because expensive model defaults no longer fight them.
-- Composer 2.5 Standard and Auto share the cheaper Cursor Models pool.
-
-## Extra Tips
-
-- Only invoke `/poteto-mode` for non-trivial work.
-- Prefer sequential verification over large parallel panels unless high-stakes.
-- Strongly follow Guard the Context Window and Laziness Protocol.
-- If you need an explicit pin, a custom agent with `model: composer-2.5[fast=false]` is more reliable than inline Task model parameters.
-
-## Credits
-
-Original pstack by Lauren Tan (@poteto). This is a lightweight config overlay for personal/token-conscious use. MIT license on upstream.
+Full playbook set and individual principle/procedure skills can be added under `skills/` as needed. The orchestrator already encodes the method.
 
 ---
 
-Made for Viper. 🐍
+Viper Stack. Rigorous. Efficient. Yours.
