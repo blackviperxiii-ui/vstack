@@ -2,10 +2,11 @@
   "repo": "cursor/plugins",
   "path": "pstack",
   "branch": "main",
-  "last_synced_sha": "ea32d9562a1c9f077d7cdd3be53d07383eb18866",
+  "last_synced_sha": "dbf49813a39c1a5389c5e28cb8e4c1c2379e2454",
   "mapping": {
     "viper-mode": "poteto-mode",
-    "setup-vstack": "setup-pstack"
+    "setup-vstack": "setup-pstack",
+    "principle-fix-root-causes": "principle-fix-root-causes"
   },
   "unported": [
     "architect",
@@ -31,7 +32,6 @@
     "principle-exhaust-the-design-space",
     "principle-experience-first",
     "principle-explain-the-number",
-    "principle-fix-root-causes",
     "principle-foundational-thinking",
     "principle-guard-the-context-window",
     "principle-laziness-protocol",
