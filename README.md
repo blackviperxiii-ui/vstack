@@ -19,7 +19,8 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 ### Cursor
 Drop the `skills/` folder into `.cursor/skills/` (project) or `~/.cursor/skills/` (global).
 
-Then in chat:
+Pick **`/viper-mode`** from the `/` menu so Cursor attaches the skill, then type your goal. Plain text `/viper-mode` may not bind the skill.
+
 ```
 /viper-mode <your goal>
 ```
@@ -59,7 +60,7 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
   - the PR has the `token-growth-approved` label.
 - New skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 

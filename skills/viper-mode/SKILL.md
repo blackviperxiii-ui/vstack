@@ -1,11 +1,9 @@
 ---
 name: viper-mode
-description: Viper Stack agent style for concise, detailed responses, deliberate subagents, unslopped prose, simple code, and verified work. Prefer Auto or Composer 2.5 Standard. Use for /viper-mode or requests to work in this style.
+description: Viper Stack style for concise responses, deliberate subagents, unslopped prose, simple code, verified work. Prefer Auto or Composer 2.5 Standard. Use for /viper-mode, viper stack, or when a playbook needs rigor.
 disable-model-invocation: true
-mode: true
 icon: snake
 color: green
-reminder: New task? Playbook match or rigor needed -> apply /viper-mode. Casual turn or user opts out -> don't.
 ---
 
 # Viper Mode
@@ -36,7 +34,7 @@ Triggers for rigor: nontrivial changes, architecture, ambiguous forks, data mode
 
 **Verification**
 - Prove It Works: verify the real artifact, not just that it compiles.
-- Fix Root Causes: reproduce, trace, fix the source.
+- Fix Root Causes: reproduce, trace, fix the source (**principle-fix-root-causes** for patterns).
 - Sequence Work into Verifiable Units: small checkable steps.
 - Test Behavior, Not Implementation.
 
@@ -70,7 +68,9 @@ For anything else, design a short auditable procedure (figure-it-out) then follo
 
 ## Subagents
 
-Use fresh subagents for code writing and heavy exploration. Brief them with scope, success criteria, and the relevant principles. Review their work yourself. Prefer sequential over parallel unless the units are truly independent and the task is large.
+The `/viper-mode` chat runs the playbook and spawns delegates; never delegate the whole playbook (nested agents lack Task).
+
+Use fresh subagents for code and exploration. Brief them with scope, success criteria, and the relevant principles. Review their work yourself. Prefer sequential over parallel unless the units are truly independent and the task is large.
 
 ## Writing
 
