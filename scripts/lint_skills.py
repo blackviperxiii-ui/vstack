@@ -13,6 +13,7 @@ SKILLS_DIR = REPO_ROOT / "skills"
 UPSTREAM_PATH = REPO_ROOT / "UPSTREAM.json"
 
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+BANNED_FRONTMATTER_KEYS = frozenset({"mode", "reminder"})
 
 
 def parse_simple_yaml_frontmatter(block: str) -> dict[str, str]:
@@ -44,6 +45,11 @@ def lint_skill(path: Path) -> list[str]:
         errors.append(f"{path}: frontmatter missing 'name'")
     if not meta.get("description"):
         errors.append(f"{path}: frontmatter missing 'description'")
+    for key in meta:
+        if key in BANNED_FRONTMATTER_KEYS:
+            errors.append(
+                f"{path}: remove ignored frontmatter key '{key}' (Cursor does not apply it)"
+            )
     return errors
 
 

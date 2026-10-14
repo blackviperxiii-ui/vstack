@@ -146,6 +146,9 @@ def write_summary(lines: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
+    if not UPSTREAM_PATH.is_file():
+        print(f"Missing {UPSTREAM_PATH}; cannot run token check", file=sys.stderr)
+        return 1
     fresh = run_count_tokens()
     committed = load_json(TOKENS_PATH)
     if json.dumps(fresh, sort_keys=True) != json.dumps(committed, sort_keys=True):

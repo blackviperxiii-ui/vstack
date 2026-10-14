@@ -2,11 +2,12 @@
   "repo": "cursor/plugins",
   "path": "pstack",
   "branch": "main",
-  "last_synced_sha": "dbf49813a39c1a5389c5e28cb8e4c1c2379e2454",
+  "last_synced_sha": "ce649c03ac3b75b6ae80cbd15b7e2c536caedb5a",
   "mapping": {
     "viper-mode": "poteto-mode",
     "setup-vstack": "setup-pstack",
-    "principle-fix-root-causes": "principle-fix-root-causes"
+    "principle-fix-root-causes": "principle-fix-root-causes",
+    "in-your-own-words": "in-your-own-words"
   },
   "unported": [
     "architect",

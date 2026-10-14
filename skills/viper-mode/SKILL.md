@@ -44,6 +44,7 @@ Triggers for rigor: nontrivial changes, architecture, ambiguous forks, data mode
 - Single-model sequential panels by default. Multi-model only on explicit high-stakes request.
 - Fresh subagents by default. Owner reviews every result.
 - Medium or small reasoning budget preferred.
+- Match effort to the job: step up reasoning for subtle work; step down for routine; stay on Auto or Composer Standard unless CI is red or someone is blocked.
 
 **Meta**
 - Encode Lessons in Structure: turn repeated patterns into rules or scripts.
