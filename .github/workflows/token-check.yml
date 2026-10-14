@@ -18,6 +18,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: python scripts/lint_skills.py
+      - run: python scripts/check_secrets.py
+      - run: python -m unittest discover -s tests -p 'test_*.py' -q
 
   token-check:
     name: token budget check

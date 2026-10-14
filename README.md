@@ -36,6 +36,10 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 
 - **viper-mode**: The main router. Matches the task to a playbook, builds a todo list, applies principles, delegates efficiently, and demands evidence before claiming done.
 
+## Slash skills
+
+- **in-your-own-words**: Before substantial work, restate the user's goals and the problem in your own words (`/in-your-own-words`).
+
 ## Efficiency defaults (baked in)
 
 - Models: auto / inherit parent (set parent to Auto or Composer 2.5 Standard with Fast off)
