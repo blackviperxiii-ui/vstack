@@ -68,6 +68,27 @@ def compare_commits(upstream: dict[str, object], base: str, head: str) -> dict:
     return fetch_json(url)  # type: ignore[return-value]
 
 
+def commits_touching_path(
+    upstream: dict[str, object], base: str, head: str
+) -> list[dict]:
+    """Walk path-specific history from head until base (same scope as latest_pstack_commit)."""
+    repo = upstream["repo"]
+    path = upstream["path"]
+    url = f"{GITHUB_API}/repos/{repo}/commits?sha={head}&path={path}&per_page=100"
+    commits = fetch_json(url)
+    if not isinstance(commits, list):
+        return []
+    result: list[dict] = []
+    for commit in commits:
+        sha = commit.get("sha")
+        if not isinstance(sha, str):
+            continue
+        if sha == base:
+            break
+        result.append(commit)
+    return result
+
+
 def count_tokens_text(text: str) -> int:
     return len(tiktoken.get_encoding(ENCODING_NAME).encode(text))
 
@@ -140,7 +161,7 @@ def build_issue_body(
         "## Commits",
         "",
     ]
-    for commit in compare.get("commits", []):
+    for commit in commits_touching_path(upstream, last_synced, latest):
         sha = commit.get("sha", "")[:7]
         msg = (commit.get("commit") or {}).get("message", "").split("\n")[0]
         lines.append(f"- `{sha}` {msg}")
@@ -197,13 +218,12 @@ def find_open_issue(repo: str, token: str) -> int | None:
 
 
 def dry_run_report(upstream: dict[str, object], last_synced: str, latest: str) -> int:
-    compare = compare_commits(upstream, last_synced, latest)
     print(f"Drift: {last_synced[:7]} → {latest[:7]}")
     print(
         f"Compare: https://github.com/{upstream['repo']}/compare/"
         f"{last_synced}...{latest}"
     )
-    commits = compare.get("commits", [])
+    commits = commits_touching_path(upstream, last_synced, latest)
     print(f"Commits touching {upstream['path']}/: {len(commits)}")
     for commit in commits[:10]:
         sha = commit.get("sha", "")[:7]
