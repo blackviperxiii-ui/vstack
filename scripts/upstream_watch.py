@@ -196,12 +196,27 @@ def find_open_issue(repo: str, token: str) -> int | None:
     return None
 
 
+def dry_run_report(upstream: dict[str, object], last_synced: str, latest: str) -> int:
+    compare = compare_commits(upstream, last_synced, latest)
+    print(f"Drift: {last_synced[:7]} → {latest[:7]}")
+    print(
+        f"Compare: https://github.com/{upstream['repo']}/compare/"
+        f"{last_synced}...{latest}"
+    )
+    commits = compare.get("commits", [])
+    print(f"Commits touching {upstream['path']}/: {len(commits)}")
+    for commit in commits[:10]:
+        sha = commit.get("sha", "")[:7]
+        msg = (commit.get("commit") or {}).get("message", "").split("\n")[0]
+        print(f"  {sha} {msg}")
+    if len(commits) > 10:
+        print(f"  ... and {len(commits) - 10} more")
+    return 0
+
+
 def main() -> int:
-    token = os.environ.get("GITHUB_TOKEN")
-    github_repo = os.environ.get("GITHUB_REPOSITORY")
-    if not token or not github_repo:
-        print("GITHUB_TOKEN and GITHUB_REPOSITORY required", file=sys.stderr)
-        return 1
+    argv = sys.argv[1:]
+    dry_run = "--dry-run" in argv
 
     upstream = load_upstream()
     last_synced = str(upstream["last_synced_sha"])
@@ -210,6 +225,18 @@ def main() -> int:
     if last_synced == latest:
         print(f"Up to date at {last_synced[:7]}")
         return 0
+
+    if dry_run:
+        return dry_run_report(upstream, last_synced, latest)
+
+    token = os.environ.get("GITHUB_TOKEN")
+    github_repo = os.environ.get("GITHUB_REPOSITORY")
+    if not token or not github_repo:
+        print(
+            "GITHUB_TOKEN and GITHUB_REPOSITORY required (or pass --dry-run)",
+            file=sys.stderr,
+        )
+        return 1
 
     compare = compare_commits(upstream, last_synced, latest)
     body = build_issue_body(upstream, last_synced, latest, compare)
