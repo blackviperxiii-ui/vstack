@@ -54,7 +54,7 @@ Full playbook set and individual principle/procedure skills can be added under `
 
 ## Upstream sync and token budget
 
-This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tree/main/pstack) in `UPSTREAM.json` (`last_synced_sha`, `mapping`, `unported`). A daily **Upstream watch** workflow opens or updates a single `upstream-sync` issue when `pstack/` moves upstream; it never edits skills for you.
+This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tree/main/pstack) in `UPSTREAM.json` (`last_synced_sha`, `mapping`, `unported`). A daily **Upstream watch** workflow opens or updates a single `upstream-sync` issue when `pstack/` moves upstream; it never edits skills for you. **Dependabot** watches `requirements-ci.txt` and GitHub Actions weekly.
 
 **Sync PRs** bump `last_synced_sha` after you port changes. **Token check** on every PR to `main`:
 
