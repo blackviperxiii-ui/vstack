@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCAN_ROOTS = (REPO_ROOT / "skills", REPO_ROOT / "scripts", REPO_ROOT)
-SKIP_DIRS = {".git", ".github", "__pycache__"}
+SKIP_DIRS = {".git", "__pycache__"}
 SKIP_FILES = {"check_secrets.py"}
 
 PATTERNS: list[tuple[str, re.Pattern[str]]] = [
@@ -31,7 +31,7 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ),
     (
         "OpenAI API key",
-        re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"),
+        re.compile(r"\bsk-[A-Za-z0-9_-]{20,}"),
     ),
     (
         "Slack token",
@@ -61,8 +61,8 @@ def iter_text_files() -> list[Path]:
 def scan_file(path: Path) -> list[str]:
     errors: list[str] = []
     try:
-        text = path.read_text(encoding="utf-8")
-    except (UnicodeDecodeError, OSError):
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
         return errors
     rel = path.relative_to(REPO_ROOT)
     for label, pattern in PATTERNS:
