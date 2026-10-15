@@ -7,7 +7,6 @@ import json
 import os
 import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -15,11 +14,9 @@ from unittest import mock
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-try:
-    import tiktoken  # noqa: F401
-except ImportError:
-    # token_check imports tiktoken at module level; the helpers under test never use it.
-    sys.modules["tiktoken"] = types.ModuleType("tiktoken")
+from _stubs import install_tiktoken_stub  # noqa: E402
+
+install_tiktoken_stub()
 
 import token_check  # noqa: E402
 
@@ -120,10 +117,14 @@ class WriteSummaryTest(unittest.TestCase):
             self.assertEqual(out.read_text(encoding="utf-8"), "# T\nrow\n")
 
     def test_noop_when_env_unset(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            with mock.patch.dict(os.environ, clean_env(), clear=True):
-                token_check.write_summary(["x"])
-            self.assertEqual(list(Path(tmp).iterdir()), [])
+        with (
+            mock.patch.dict(os.environ, clean_env(), clear=True),
+            mock.patch.object(Path, "write_text") as write_text,
+            mock.patch.object(Path, "open") as path_open,
+        ):
+            token_check.write_summary(["x"])
+        write_text.assert_not_called()
+        path_open.assert_not_called()
 
 
 class SyncPrStateTest(unittest.TestCase):

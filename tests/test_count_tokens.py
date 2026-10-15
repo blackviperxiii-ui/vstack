@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -13,14 +12,9 @@ from unittest import mock
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-try:
-    import tiktoken  # noqa: F401
-except ImportError:
-    # count_tokens imports tiktoken at module level; tests mock get_encoding anyway.
-    stub = types.ModuleType("tiktoken")
-    stub.Encoding = object  # type: ignore[attr-defined]
-    stub.get_encoding = lambda name: None  # type: ignore[attr-defined]
-    sys.modules["tiktoken"] = stub
+from _stubs import install_tiktoken_stub  # noqa: E402
+
+install_tiktoken_stub()
 
 import count_tokens  # noqa: E402
 

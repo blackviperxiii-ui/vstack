@@ -8,7 +8,6 @@ import io
 import json
 import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -16,14 +15,9 @@ from unittest import mock
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-try:
-    import tiktoken  # noqa: F401
-except ImportError:
-    # upstream_watch imports tiktoken at module level; tests mock get_encoding anyway.
-    stub = types.ModuleType("tiktoken")
-    stub.Encoding = object  # type: ignore[attr-defined]
-    stub.get_encoding = lambda name: None  # type: ignore[attr-defined]
-    sys.modules["tiktoken"] = stub
+from _stubs import install_tiktoken_stub  # noqa: E402
+
+install_tiktoken_stub()
 
 import upstream_watch  # noqa: E402
 
@@ -137,20 +131,42 @@ class LatestPstackCommitTest(unittest.TestCase):
 
 
 class CommitsTouchingPathTest(unittest.TestCase):
-    def run_with(self, payload: object) -> list[dict]:
-        with mock.patch.object(upstream_watch, "fetch_json", return_value=payload):
+    def run_with(self, *pages: object) -> tuple[list[dict], bool]:
+        with mock.patch.object(upstream_watch, "fetch_json", side_effect=list(pages)):
             return upstream_watch.commits_touching_path(UPSTREAM, "base", "head")
 
     def test_stops_at_base(self) -> None:
         commits = [{"sha": "h1"}, {"sha": "h2"}, {"sha": "base"}, {"sha": "old"}]
-        self.assertEqual(self.run_with(commits), [{"sha": "h1"}, {"sha": "h2"}])
+        self.assertEqual(self.run_with(commits), ([{"sha": "h1"}, {"sha": "h2"}], False))
 
     def test_base_not_found_returns_all_valid(self) -> None:
         commits = [{"sha": "h1"}, {"nosha": 1}, {"sha": 5}, {"sha": "h2"}]
-        self.assertEqual(self.run_with(commits), [{"sha": "h1"}, {"sha": "h2"}])
+        self.assertEqual(self.run_with(commits), ([{"sha": "h1"}, {"sha": "h2"}], False))
 
     def test_non_list_payload(self) -> None:
-        self.assertEqual(self.run_with({"message": "rate limited"}), [])
+        self.assertEqual(self.run_with({"message": "rate limited"}), ([], False))
+
+    def test_base_on_second_page(self) -> None:
+        n = upstream_watch.COMMITS_PER_PAGE
+        page1 = [{"sha": f"a{i}"} for i in range(n)]
+        page2 = [{"sha": "b1"}, {"sha": "base"}, {"sha": "old"}]
+        with mock.patch.object(upstream_watch, "fetch_json", side_effect=[page1, page2]) as fetch:
+            commits, truncated = upstream_watch.commits_touching_path(UPSTREAM, "base", "head")
+        self.assertEqual(commits, page1 + [{"sha": "b1"}])
+        self.assertFalse(truncated)
+        self.assertEqual(fetch.call_count, 2)
+        self.assertIn("&page=1", fetch.call_args_list[0].args[0])
+        self.assertIn("&page=2", fetch.call_args_list[1].args[0])
+
+    def test_base_never_found_flags_truncated(self) -> None:
+        n = upstream_watch.COMMITS_PER_PAGE
+        cap = upstream_watch.MAX_COMMIT_PAGES
+        pages = [[{"sha": f"p{p}c{i}"} for i in range(n)] for p in range(cap)]
+        with mock.patch.object(upstream_watch, "fetch_json", side_effect=pages) as fetch:
+            commits, truncated = upstream_watch.commits_touching_path(UPSTREAM, "base", "head")
+        self.assertTrue(truncated)
+        self.assertEqual(len(commits), n * cap)
+        self.assertEqual(fetch.call_count, cap)
 
 
 class FetchUpstreamSkillAtTest(unittest.TestCase):
@@ -200,7 +216,7 @@ class BuildIssueBodyTest(unittest.TestCase):
     def build(self, files: list[dict], commits: list[dict]) -> str:
         texts = {("old", "up-a"): "one two", ("new", "up-a"): "one two three four"}
         with (
-            mock.patch.object(upstream_watch, "commits_touching_path", return_value=commits),
+            mock.patch.object(upstream_watch, "commits_touching_path", return_value=(commits, False)),
             mock.patch.object(
                 upstream_watch,
                 "fetch_upstream_skill_at",
@@ -253,7 +269,7 @@ class BuildIssueBodyTest(unittest.TestCase):
     def test_malformed_mapping_and_unported_tolerated(self) -> None:
         bad = {**UPSTREAM, "mapping": "oops", "unported": "oops"}
         with (
-            mock.patch.object(upstream_watch, "commits_touching_path", return_value=[]),
+            mock.patch.object(upstream_watch, "commits_touching_path", return_value=([], False)),
             mock.patch.object(upstream_watch, "fetch_upstream_skill_at", return_value=None),
         ):
             body = upstream_watch.build_issue_body(
@@ -267,7 +283,7 @@ class DryRunReportTest(unittest.TestCase):
         commits = [{"sha": f"{i:07d}xx", "commit": {"message": f"msg {i}\nmore"}} for i in range(12)]
         out = io.StringIO()
         with (
-            mock.patch.object(upstream_watch, "commits_touching_path", return_value=commits),
+            mock.patch.object(upstream_watch, "commits_touching_path", return_value=(commits, False)),
             contextlib.redirect_stdout(out),
         ):
             rc = upstream_watch.dry_run_report(UPSTREAM, "a" * 40, "b" * 40)
@@ -281,7 +297,40 @@ class DryRunReportTest(unittest.TestCase):
         self.assertEqual(len(lines), 3 + 10 + 1)
 
 
+class TruncationVisibleTest(unittest.TestCase):
+    def test_dry_run_marks_truncated(self) -> None:
+        out = io.StringIO()
+        with (
+            mock.patch.object(upstream_watch, "commits_touching_path", return_value=([], True)),
+            contextlib.redirect_stdout(out),
+        ):
+            upstream_watch.dry_run_report(UPSTREAM, "a" * 40, "b" * 40)
+        self.assertIn("Commits touching pstack/: 0+ (truncated)", out.getvalue())
+
+    def test_issue_body_notes_truncated(self) -> None:
+        with (
+            mock.patch.object(upstream_watch, "commits_touching_path", return_value=([], True)),
+        ):
+            body = upstream_watch.build_issue_body(UPSTREAM, "old", "new", {"files": []})
+        self.assertIn(upstream_watch.TRUNCATED_NOTE, body)
+
+
 class MainTest(unittest.TestCase):
+    def test_dry_run_without_token_returns_0(self) -> None:
+        out = io.StringIO()
+        with (
+            mock.patch.object(upstream_watch, "load_upstream", return_value=UPSTREAM),
+            mock.patch.object(upstream_watch, "latest_pstack_commit", return_value="b" * 40),
+            mock.patch.object(
+                upstream_watch, "commits_touching_path", return_value=([{"sha": "c" * 40}], False)
+            ),
+            mock.patch.object(sys, "argv", ["upstream_watch.py", "--dry-run"]),
+            mock.patch.dict(upstream_watch.os.environ, {}, clear=True),
+            contextlib.redirect_stdout(out),
+        ):
+            self.assertEqual(upstream_watch.main(), 0)
+        self.assertIn("Commits touching pstack/: 1", out.getvalue())
+
     def test_up_to_date(self) -> None:
         out = io.StringIO()
         with (

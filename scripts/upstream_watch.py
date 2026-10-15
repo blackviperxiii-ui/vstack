@@ -17,6 +17,12 @@ UPSTREAM_PATH = REPO_ROOT / "UPSTREAM.json"
 ENCODING_NAME = "cl100k_base"
 ISSUE_LABEL = "upstream-sync"
 GITHUB_API = "https://api.github.com"
+COMMITS_PER_PAGE = 100
+MAX_COMMIT_PAGES = 10
+TRUNCATED_NOTE = (
+    f"_Commit list truncated after {MAX_COMMIT_PAGES * COMMITS_PER_PAGE} commits; "
+    "synced commit not reached. Use the compare link._"
+)
 
 
 def load_upstream() -> dict[str, object]:
@@ -70,23 +76,33 @@ def compare_commits(upstream: dict[str, object], base: str, head: str) -> dict:
 
 def commits_touching_path(
     upstream: dict[str, object], base: str, head: str
-) -> list[dict]:
-    """Walk path-specific history from head until base (same scope as latest_pstack_commit)."""
+) -> tuple[list[dict], bool]:
+    """Walk path-specific history from head until base (same scope as latest_pstack_commit).
+
+    Returns (commits, truncated). truncated is True when MAX_COMMIT_PAGES pages were
+    read without finding base or reaching the end of history, so the list is partial.
+    """
     repo = upstream["repo"]
     path = upstream["path"]
-    url = f"{GITHUB_API}/repos/{repo}/commits?sha={head}&path={path}&per_page=100"
-    commits = fetch_json(url)
-    if not isinstance(commits, list):
-        return []
     result: list[dict] = []
-    for commit in commits:
-        sha = commit.get("sha")
-        if not isinstance(sha, str):
-            continue
-        if sha == base:
-            break
-        result.append(commit)
-    return result
+    for page in range(1, MAX_COMMIT_PAGES + 1):
+        url = (
+            f"{GITHUB_API}/repos/{repo}/commits?sha={head}&path={path}"
+            f"&per_page={COMMITS_PER_PAGE}&page={page}"
+        )
+        commits = fetch_json(url)
+        if not isinstance(commits, list):
+            return result, False
+        for commit in commits:
+            sha = commit.get("sha")
+            if not isinstance(sha, str):
+                continue
+            if sha == base:
+                return result, False
+            result.append(commit)
+        if len(commits) < COMMITS_PER_PAGE:
+            return result, False
+    return result, True
 
 
 def count_tokens_text(text: str) -> int:
@@ -159,7 +175,10 @@ def build_issue_body(
         "## Commits",
         "",
     ]
-    for commit in commits_touching_path(upstream, last_synced, latest):
+    commits, truncated = commits_touching_path(upstream, last_synced, latest)
+    if truncated:
+        lines.append(TRUNCATED_NOTE)
+    for commit in commits:
         sha = commit.get("sha", "")[:7]
         msg = (commit.get("commit") or {}).get("message", "").split("\n")[0]
         lines.append(f"- `{sha}` {msg}")
@@ -221,8 +240,9 @@ def dry_run_report(upstream: dict[str, object], last_synced: str, latest: str) -
         f"Compare: https://github.com/{upstream['repo']}/compare/"
         f"{last_synced}...{latest}"
     )
-    commits = commits_touching_path(upstream, last_synced, latest)
-    print(f"Commits touching {upstream['path']}/: {len(commits)}")
+    commits, truncated = commits_touching_path(upstream, last_synced, latest)
+    suffix = "+ (truncated)" if truncated else ""
+    print(f"Commits touching {upstream['path']}/: {len(commits)}{suffix}")
     for commit in commits[:10]:
         sha = commit.get("sha", "")[:7]
         msg = (commit.get("commit") or {}).get("message", "").split("\n")[0]
