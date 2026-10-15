@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 import sys
 import tempfile
@@ -170,6 +171,33 @@ class LintUpstreamTest(TempDirTestCase):
     def test_happy_path(self) -> None:
         path = self.write_json(self.VALID)
         self.assertEqual(self.lint(path), [])
+
+
+class LintSkillsMainTest(TempDirTestCase):
+    def test_main_ok_when_skills_and_upstream_valid(self) -> None:
+        skills = self.tmp / "skills" / "demo"
+        skills.mkdir(parents=True)
+        skills.joinpath("SKILL.md").write_text(
+            "---\nname: demo\ndescription: ok\n---\n\n# x\n", encoding="utf-8"
+        )
+        upstream = self.write(
+            "UPSTREAM.json", json.dumps(LintUpstreamTest.VALID)
+        )
+        with (
+            mock.patch.object(lint_skills, "SKILLS_DIR", self.tmp / "skills"),
+            mock.patch.object(lint_skills, "UPSTREAM_PATH", upstream),
+            mock.patch("sys.stdout", new_callable=io.StringIO) as out,
+        ):
+            self.assertEqual(lint_skills.main(), 0)
+        self.assertIn("lint OK", out.getvalue())
+
+    def test_main_returns_one_on_errors(self) -> None:
+        with (
+            mock.patch.object(lint_skills, "SKILLS_DIR", self.tmp / "nope"),
+            mock.patch.object(lint_skills, "UPSTREAM_PATH", self.tmp / "nope.json"),
+            mock.patch("sys.stderr", new_callable=io.StringIO),
+        ):
+            self.assertEqual(lint_skills.main(), 1)
 
 
 if __name__ == "__main__":

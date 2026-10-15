@@ -19,6 +19,8 @@ GITHUB_TOKEN = "gh" + "p_" + "a" * 24
 GITHUB_PAT = "github" + "_pat_" + "B" * 22
 AWS_KEY = "AK" + "IA" + "0123456789ABCDEF"
 PRIVATE_KEY = "-----BEGIN " + "RSA PRIVATE KEY-----"
+OPENAI_KEY = "sk-" + "A" * 24
+SLACK_TOKEN = "xoxb-" + "1" * 20
 
 
 class ScanFileTest(unittest.TestCase):
@@ -36,6 +38,8 @@ class ScanFileTest(unittest.TestCase):
             f"pat: {GITHUB_PAT}\n": "note.md: possible GitHub fine-grained PAT",
             f"id={AWS_KEY}\n": "note.md: possible AWS access key id",
             f"{PRIVATE_KEY}\nabc\n": "note.md: possible Private key block",
+            f"key={OPENAI_KEY}\n": "note.md: possible OpenAI API key",
+            f"bot {SLACK_TOKEN}\n": "note.md: possible Slack token",
         }
         for content, expected in cases.items():
             with self.subTest(expected=expected):

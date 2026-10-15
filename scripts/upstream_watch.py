@@ -111,7 +111,6 @@ def classify_file(
     filename: str,
     mapping: dict[str, str],
     unported: set[str],
-    known_upstream_skills: set[str],
 ) -> str:
     # filename like pstack/skills/foo/SKILL.md
     parts = filename.split("/")
@@ -136,7 +135,6 @@ def build_issue_body(
         mapping = {}
     unported_list = upstream.get("unported", [])
     unported = set(unported_list) if isinstance(unported_list, list) else set()
-    upstream_skill_names = set(mapping.values()) | unported
 
     grouped: dict[str, list[str]] = {
         "mapped": [],
@@ -146,7 +144,7 @@ def build_issue_body(
     }
     for file_info in compare.get("files", []):
         fn = file_info.get("filename", "")
-        bucket = classify_file(fn, mapping, unported, upstream_skill_names)
+        bucket = classify_file(fn, mapping, unported)
         status = file_info.get("status", "")
         grouped[bucket].append(f"- `{fn}` ({status})")
 
