@@ -20,6 +20,8 @@ GITHUB_PAT = "github" + "_pat_" + "B" * 22
 AWS_KEY = "AK" + "IA" + "0123456789ABCDEF"
 PRIVATE_KEY = "-----BEGIN " + "RSA PRIVATE KEY-----"
 OPENAI_KEY = "sk-" + "A" * 24
+OPENAI_PROJ_KEY = "sk-" + "proj-" + "A1_" * 10
+ANTHROPIC_KEY = "sk-" + "ant-" + "api03-" + "Zz9_-" * 5
 SLACK_TOKEN = "xoxb-" + "1" * 20
 
 
@@ -39,6 +41,8 @@ class ScanFileTest(unittest.TestCase):
             f"id={AWS_KEY}\n": "note.md: possible AWS access key id",
             f"{PRIVATE_KEY}\nabc\n": "note.md: possible Private key block",
             f"key={OPENAI_KEY}\n": "note.md: possible OpenAI API key",
+            f"key={OPENAI_PROJ_KEY}\n": "note.md: possible OpenAI API key",
+            f"key={ANTHROPIC_KEY}\n": "note.md: possible OpenAI API key",
             f"bot {SLACK_TOKEN}\n": "note.md: possible Slack token",
         }
         for content, expected in cases.items():
@@ -51,13 +55,41 @@ class ScanFileTest(unittest.TestCase):
     def test_short_token_is_not_flagged(self) -> None:
         self.assertEqual(self.scan("gh" + "p_" + "a" * 19), [])
 
-    def test_undecodable_file_is_skipped(self) -> None:
+    def test_hyphenated_words_are_not_flagged(self) -> None:
+        self.assertEqual(
+            self.scan("risk-assessment-and-mitigation-plan disk-usage-report-for-the-fleet\n"),
+            [],
+        )
+
+    def test_non_utf8_file_is_still_scanned(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            path = root / "blob.bin"
-            path.write_bytes(b"\xff\xfe\x00\x80" + AWS_KEY.encode())
+            path = root / "legacy.txt"
+            path.write_bytes("caf\xe9 ".encode("latin-1") + AWS_KEY.encode())
             with mock.patch.object(check_secrets, "REPO_ROOT", root):
-                self.assertEqual(check_secrets.scan_file(path), [])
+                self.assertEqual(
+                    check_secrets.scan_file(path),
+                    ["legacy.txt: possible AWS access key id"],
+                )
+
+    def test_unreadable_file_is_skipped(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with mock.patch.object(check_secrets, "REPO_ROOT", root):
+                self.assertEqual(check_secrets.scan_file(root / "missing.md"), [])
+
+    def test_github_workflow_is_scanned(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wf = root / ".github" / "workflows" / "ci.yml"
+            wf.parent.mkdir(parents=True)
+            wf.write_text(f"env:\n  T: {GITHUB_TOKEN}\n", encoding="utf-8")
+            with (
+                mock.patch.object(check_secrets, "REPO_ROOT", root),
+                mock.patch.object(check_secrets, "SCAN_ROOTS", (root,)),
+            ):
+                errors = [e for p in check_secrets.iter_text_files() for e in check_secrets.scan_file(p)]
+            self.assertEqual(errors, [".github/workflows/ci.yml: possible GitHub token"])
 
 
 class IterTextFilesTest(unittest.TestCase):
@@ -67,8 +99,8 @@ class IterTextFilesTest(unittest.TestCase):
             for rel in (
                 "a.md",
                 "sub/b.txt",
-                ".git/config",
                 ".github/ci.yml",
+                ".git/config",
                 "sub/__pycache__/c.py",
                 "check_secrets.py",
                 "pic.png",
@@ -80,7 +112,7 @@ class IterTextFilesTest(unittest.TestCase):
             with mock.patch.object(check_secrets, "SCAN_ROOTS", (root, root / "nope")):
                 found = check_secrets.iter_text_files()
             self.assertEqual(
-                [p.relative_to(root).as_posix() for p in found], ["a.md", "sub/b.txt"]
+                [p.relative_to(root).as_posix() for p in found], [".github/ci.yml", "a.md", "sub/b.txt"]
             )
 
 
