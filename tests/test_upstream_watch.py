@@ -69,9 +69,7 @@ class ClassifyFileTest(unittest.TestCase):
     unported = {"up-u"}
 
     def classify(self, filename: str) -> str:
-        return upstream_watch.classify_file(
-            filename, self.mapping, self.unported, {"up-a", "up-u"}
-        )
+        return upstream_watch.classify_file(filename, self.mapping, self.unported)
 
     def test_mapped(self) -> None:
         self.assertEqual(self.classify("pstack/skills/up-a/SKILL.md"), "mapped")
@@ -103,6 +101,17 @@ class CountTokensTextTest(unittest.TestCase):
             self.assertEqual(upstream_watch.count_tokens_text("one two three"), 3)
             self.assertEqual(upstream_watch.count_tokens_text(""), 0)
         get_enc.assert_called_with("cl100k_base")
+
+
+class CompareCommitsTest(unittest.TestCase):
+    def test_builds_compare_url(self) -> None:
+        with mock.patch.object(
+            upstream_watch, "fetch_json", return_value={"files": []}
+        ) as fetch:
+            upstream_watch.compare_commits(UPSTREAM, "base", "head")
+        fetch.assert_called_once_with(
+            "https://api.github.com/repos/owner/pstack-repo/compare/base...head"
+        )
 
 
 class LatestPstackCommitTest(unittest.TestCase):
