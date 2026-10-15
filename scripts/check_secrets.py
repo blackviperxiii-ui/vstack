@@ -29,6 +29,14 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         "Private key block",
         re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     ),
+    (
+        "OpenAI API key",
+        re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"),
+    ),
+    (
+        "Slack token",
+        re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
+    ),
 ]
 
 
