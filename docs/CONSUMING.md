@@ -1,29 +1,25 @@
-# Requiring vstack in other repos
+# Installing vstack in Cursor
 
-Paste one of the blocks below into the consumer repo so agents load **vstack** (never pstack). Full how/when guide: [USAGE.md](USAGE.md).
+vstack is packaged as a Cursor plugin (`.cursor-plugin/plugin.json`, skills in `skills/`, an always-applied rule in `rules/`). Install it in Cursor itself so every agent, local or cloud, can use it. **Do not copy vstack skills, rules, or AGENTS.md/CLAUDE.md sections into project repos.**
 
-Install skills first (`npx skills add blackviperxiii-ui/vstack --skill viper-mode`, or copy this repo’s `skills/` into `.cursor/skills/` / `~/.cursor/skills/`).
+## Local Cursor (one computer)
 
-## AGENTS.md / CLAUDE.md
-
-```markdown
-## vstack (required)
-
-Always load and follow the vstack skills (start with `viper-mode` / `skills/viper-mode/SKILL.md`). Never use pstack or poteto-mode.
-
-Source: https://github.com/blackviperxiii-ui/vstack — see docs/USAGE.md
+```bash
+git clone https://github.com/blackviperxiii-ui/vstack ~/vstack
+mkdir -p ~/.cursor/plugins/local
+ln -sfn ~/vstack ~/.cursor/plugins/local/vstack
 ```
 
-## `.cursor/rules` (always-applied)
+Reload Cursor. Update with `git -C ~/vstack pull`.
 
-```markdown
----
-description: "Always use vstack skills; never pstack."
-alwaysApply: true
----
+## All agents, including Cloud Agents and Projects
 
-Always load and follow the vstack skills (start with viper-mode); never use pstack.
-Source: https://github.com/blackviperxiii-ui/vstack
+Import this repo as a team marketplace: Cursor Dashboard, Plugins & MCPs, Team Marketplaces, Add Marketplace, Import from Repo, paste `https://github.com/blackviperxiii-ui/vstack`. Set vstack to Required and turn on Auto Refresh. Running agents keep the version they started with; new agents pick up updates.
+
+Alternatively, submit the repo to the public Cursor Marketplace at https://cursor.com/marketplace/publish; once listed, install it from Customize or `/add-plugin vstack`.
+
+## Other agents (Claude Code, Codex, etc.)
+
+```bash
+npx skills add blackviperxiii-ui/vstack
 ```
-
-Keep the rule short. Do not paste full playbooks into rules or skills in the consumer repo — that burns tokens. Point agents at the installed `viper-mode` skill instead.
