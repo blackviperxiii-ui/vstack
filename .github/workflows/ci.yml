@@ -1,17 +1,28 @@
-name: Token check
+name: CI
 
 on:
+  push:
+    branches: [main, beta]
   pull_request:
-    branches: [main]
+    branches: [main, beta]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: read
 
+# A newer push to the same PR cancels the run it replaces. Pushes to beta and
+# main always finish.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
-    name: lint skills and upstream
+    name: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -22,8 +33,9 @@ jobs:
       - run: python -m unittest discover -s tests -p 'test_*.py' -q
 
   token-check:
-    name: token budget check
+    name: token-check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
         with:
