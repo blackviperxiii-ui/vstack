@@ -42,6 +42,7 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 
 - **in-your-own-words**: Before substantial work, restate the user's goals and the problem in your own words (`/in-your-own-words`).
 - **sharpen**: Deepen a task (not enlarge it), then rewrite the prompt (`/sharpen`).
+- **qa-walkthrough**: App UI walk + code QA; ranked report; safe fixes as small beta PRs (`/qa-walkthrough`).
 - **create-formal-verification-skill**: Generate a project-local formal verification skill (`/create-formal-verification-skill`).
 - **maintain-formal-verification-skill**: Resync formal verification after code drift (`/maintain-formal-verification-skill`).
 
@@ -67,9 +68,10 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 - Existing skills must not grow versus `main`, unless:
   - this is a sync PR and each grown skill’s growth ratio is ≤ its mapped upstream file’s growth between the old and new SHAs, plus 5%; or
   - the PR has the `token-growth-approved` label.
-- New skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
+- New **mapped** (upstream-ported) skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
+- New **original** (vstack-native, no `UPSTREAM.json` mapping) skills are allowed on any PR if they stay ≤ **400** tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`. Original: `qa-walkthrough`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 

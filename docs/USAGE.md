@@ -11,7 +11,7 @@ For agents working *in this repo*, also read [AGENTS.md](../AGENTS.md). For drop
 Think of vstack as a playbook pack for your agent:
 
 1. **`viper-mode`** is the main router. It picks a playbook, builds a short todo list, applies principles (smallest fix, verify the real artifact, fix root causes), and uses subagents carefully so the parent chat stays short.
-2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), and one named principle (`principle-fix-root-causes`).
+2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), one named principle (`principle-fix-root-causes`), and app QA (`qa-walkthrough`).
 3. Repo tooling (`scripts/`, CI) keeps skills lean (token budgets) and safe (lint, secret scan). That tooling is for *maintaining* vstack; day-to-day *use* is loading the skills.
 
 Credit for the method goes to Lauren Tan’s pstack. Naming and branding here are Viper Stack only.
@@ -25,6 +25,7 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 | Nontrivial code, architecture, data modeling, API boundaries | Yes — start with `viper-mode` |
 | Bugs, refactors, perf work, shipping PRs, reviews | Yes |
 | Multi-step or ambiguous work where you want a playbook + evidence | Yes |
+| Before promoting beta→main, after big features, or “run a QA walkthrough” | Yes — `/qa-walkthrough` (UI pass + code pass + ranked report) |
 | Agent work in a repo that requires vstack (this one, or a consumer with the AGENTS snippet) | **Must** — load `skills/`, start with `viper-mode` |
 | Quick factual Q&A, one-liner edits, pure brainstorming | Optional; skip if a full playbook adds noise |
 
@@ -89,7 +90,15 @@ Expected: docs-only change (no skill token growth), README link, local checks gr
 
 Another project’s `AGENTS.md` includes the snippet from [CONSUMING.md](CONSUMING.md). An agent starting there must load that project’s copy of vstack skills (or the global install), start with `viper-mode`, and never switch to pstack.
 
-### Example 4 — Skip the full stack
+### Example 4 — QA walkthrough before promote
+
+```
+/qa-walkthrough Walk GrokHub beta end-to-end before we promote to main
+```
+
+Expected: run the real app (UI pass across screens/flows/states), then code pass (deslop + root-cause debug + opts), one severity-ranked report with evidence. Clear/safe fixes as small PRs to **beta**; judgment items as Command Centre cards Assigned=Jeremy + Slack; redesign ideas stay in the report.
+
+### Example 5 — Skip the full stack
 
 User asks: “What does `UPSTREAM.json` map?” A direct read of the file is enough. No need to force a multi-step playbook unless the user asks for a deeper audit.
 
@@ -101,6 +110,7 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `setup-vstack` | Write always-applied model-preference rule |
 | `in-your-own-words` | Restate goals before substantial work |
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
+| `qa-walkthrough` | UI + code QA; ranked report; safe fixes → beta PRs |
 
 ## Related
 
