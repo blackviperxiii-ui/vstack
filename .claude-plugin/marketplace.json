@@ -1,0 +1,7 @@
+{
+  "name": "vstack",
+  "owner": { "name": "blackviperxiii-ui" },
+  "plugins": [
+    { "name": "vstack", "source": "./", "description": "Viper's skill stack for Claude Code." }
+  ]
+}

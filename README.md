@@ -76,3 +76,7 @@ Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-ps
 ---
 
 Viper Stack. Rigorous. Efficient. Yours.
+
+## Credits
+
+vstack is adapted from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT). See [LICENSE](LICENSE).
