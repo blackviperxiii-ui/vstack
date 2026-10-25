@@ -1,0 +1,12 @@
+{
+  "name": "vstack",
+  "owner": { "name": "blackviperxiii-ui" },
+  "metadata": { "description": "Jeremy's vstack skill stack for Cursor." },
+  "plugins": [
+    {
+      "name": "vstack",
+      "source": "./",
+      "description": "Viper's skill stack for Cursor agents."
+    }
+  ]
+}
