@@ -1,6 +1,6 @@
 ---
 name: setup-vstack
-description: Configure Viper Stack for token efficiency. Writes an always-applied rule preferring Auto or Composer 2.5 Standard.
+description: Configure Viper Stack for token efficiency. Writes an always-applied Auto / Composer Standard rule.
 ---
 
 # Setup Vstack
@@ -9,32 +9,24 @@ Write `~/.cursor/rules/vstack-models.mdc` (or project `.cursor/rules/`) so every
 
 ## Steps
 
-1. Detect available models (Task subagent slugs). `auto` and `inherit-parent` always valid.
-2. Prefer budget: medium (high effort) or small (medium effort).
-3. Write the rule:
+1. Detect models (Task slugs). `auto` / `inherit-parent` always valid.
+2. Budget: medium (high effort) or small (medium).
+3. Write:
 
 ```
 ---
-description: Viper Stack model choices — Auto / Composer Standard
+description: Viper Stack models — Auto / Composer Standard
 alwaysApply: true
 ---
 # budget: medium (high)
-feature, refactoring: auto
-bug-fix: auto
-perf-issue: auto
-hillclimb: auto
+feature, refactoring, bug-fix, perf-issue, hillclimb: auto
 judgment and prose: auto
 hardest tasks: auto
-how explorer: auto
-how explainer: auto
-why investigators: auto
-why synthesizer: auto
-arena runners: auto
-swarm workers: auto
-architect runners: auto
-interrogate reviewers: auto
+how, why, arena, swarm, architect, interrogate: auto
 ```
 
-4. Tell the user: parent chat Auto (Cost/Balance) or Composer 2.5 Fast OFF, then fresh session.
+4. Tell user: parent Auto or Composer 2.5 Fast OFF, then fresh session.
+5. Optional once: offer `/create-verification-skill` if no project verify harness.
+6. Optional once: offer `/create-formal-verification-skill` if no formal verify skill.
 
 Keeps rigor while protecting token allowance.
