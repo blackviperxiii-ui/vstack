@@ -14,7 +14,10 @@ jobs:
     name: upstream drift issue
     runs-on: ubuntu-latest
     steps:
+      # Integration line is beta — main lags and would reopen stale sync issues.
       - uses: actions/checkout@v7
+        with:
+          ref: beta
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"

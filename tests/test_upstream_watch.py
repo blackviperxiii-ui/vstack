@@ -237,7 +237,11 @@ class BuildIssueBodyTest(unittest.TestCase):
         ]
         commits = [{"sha": "1234567890", "commit": {"message": "Subject\n\nbody"}}]
         body = self.build(files, commits)
-        self.assertIn("Tracked sync point: `old`", body)
+        self.assertIn(f"Integration line: `{upstream_watch.INTEGRATION_BRANCH}`", body)
+        self.assertIn(
+            f"Tracked sync point (`last_synced_sha` on `{upstream_watch.INTEGRATION_BRANCH}`): `old`",
+            body,
+        )
         self.assertIn("Latest commit touching `pstack/`: `new`", body)
         self.assertIn("Compare: https://github.com/owner/pstack-repo/compare/old...new", body)
         self.assertIn("- `1234567` Subject", body)
@@ -259,7 +263,8 @@ class BuildIssueBodyTest(unittest.TestCase):
         self.assertIn("| `up-a` | 2 | 4 | +2 |", body)
         self.assertIn("| `up-u` | 0 | 0 | +0 |", body)
         self.assertIn("| `fresh` | 0 | 0 | +0 |", body)
-        self.assertTrue(body.endswith("when ready._"))
+        self.assertIn(f"checks out `{upstream_watch.INTEGRATION_BRANCH}`", body)
+        self.assertTrue(body.endswith("open a sync PR there._"))
 
     def test_empty_compare(self) -> None:
         body = self.build([], [])
@@ -289,7 +294,10 @@ class DryRunReportTest(unittest.TestCase):
             rc = upstream_watch.dry_run_report(UPSTREAM, "a" * 40, "b" * 40)
         lines = out.getvalue().splitlines()
         self.assertEqual(rc, 0)
-        self.assertEqual(lines[0], "Drift: aaaaaaa → bbbbbbb")
+        self.assertEqual(
+            lines[0],
+            f"Drift: aaaaaaa → bbbbbbb (integration: {upstream_watch.INTEGRATION_BRANCH})",
+        )
         self.assertEqual(lines[1], f"Compare: https://github.com/owner/pstack-repo/compare/{'a'*40}...{'b'*40}")
         self.assertEqual(lines[2], "Commits touching pstack/: 12")
         self.assertEqual(lines[3], "  0000000 msg 0")
@@ -315,12 +323,42 @@ class TruncationVisibleTest(unittest.TestCase):
         self.assertIn(upstream_watch.TRUNCATED_NOTE, body)
 
 
+class IsSyncNeededTest(unittest.TestCase):
+    def test_equal_sha(self) -> None:
+        self.assertFalse(upstream_watch.is_sync_needed("a", "a", None))
+
+    def test_behind_means_already_synced(self) -> None:
+        self.assertFalse(
+            upstream_watch.is_sync_needed("newer", "older", {"status": "behind", "ahead_by": 0})
+        )
+
+    def test_identical(self) -> None:
+        self.assertFalse(
+            upstream_watch.is_sync_needed("x", "y", {"status": "identical", "ahead_by": 0})
+        )
+
+    def test_ahead(self) -> None:
+        self.assertTrue(
+            upstream_watch.is_sync_needed("old", "new", {"status": "ahead", "ahead_by": 3})
+        )
+
+    def test_ahead_zero_not_needed(self) -> None:
+        self.assertFalse(
+            upstream_watch.is_sync_needed("old", "new", {"status": "ahead", "ahead_by": 0})
+        )
+
+
 class MainTest(unittest.TestCase):
     def test_dry_run_without_token_returns_0(self) -> None:
         out = io.StringIO()
         with (
             mock.patch.object(upstream_watch, "load_upstream", return_value=UPSTREAM),
             mock.patch.object(upstream_watch, "latest_pstack_commit", return_value="b" * 40),
+            mock.patch.object(
+                upstream_watch,
+                "compare_commits",
+                return_value={"status": "ahead", "ahead_by": 1, "files": []},
+            ),
             mock.patch.object(
                 upstream_watch, "commits_touching_path", return_value=([{"sha": "c" * 40}], False)
             ),
@@ -340,13 +378,55 @@ class MainTest(unittest.TestCase):
             contextlib.redirect_stdout(out),
         ):
             self.assertEqual(upstream_watch.main(), 0)
-        self.assertEqual(out.getvalue(), "Up to date at aaaaaaa\n")
+        self.assertIn("Up to date on beta", out.getvalue())
+        self.assertIn("aaaaaaa", out.getvalue())
+
+    def test_up_to_date_when_last_synced_ahead_of_path_tip(self) -> None:
+        """Non-pstack merge after tip must not open a sync issue."""
+        out = io.StringIO()
+        with (
+            mock.patch.object(upstream_watch, "load_upstream", return_value=UPSTREAM),
+            mock.patch.object(upstream_watch, "latest_pstack_commit", return_value="b" * 40),
+            mock.patch.object(
+                upstream_watch,
+                "compare_commits",
+                return_value={"status": "behind", "ahead_by": 0, "files": []},
+            ),
+            mock.patch.object(sys, "argv", ["upstream_watch.py", "--dry-run"]),
+            contextlib.redirect_stdout(out),
+        ):
+            self.assertEqual(upstream_watch.main(), 0)
+        self.assertIn("Up to date on beta", out.getvalue())
+        self.assertNotIn("Drift:", out.getvalue())
+
+    def test_closes_stale_issue_when_up_to_date(self) -> None:
+        out = io.StringIO()
+        with (
+            mock.patch.object(upstream_watch, "load_upstream", return_value=UPSTREAM),
+            mock.patch.object(upstream_watch, "latest_pstack_commit", return_value="a" * 40),
+            mock.patch.object(upstream_watch, "close_open_sync_issue", return_value=4) as close,
+            mock.patch.object(sys, "argv", ["upstream_watch.py"]),
+            mock.patch.dict(
+                upstream_watch.os.environ,
+                {"GITHUB_TOKEN": "t", "GITHUB_REPOSITORY": "o/r"},
+                clear=True,
+            ),
+            contextlib.redirect_stdout(out),
+        ):
+            self.assertEqual(upstream_watch.main(), 0)
+        close.assert_called_once_with("o/r", "t", "a" * 40)
+        self.assertIn("Closed stale issue #4", out.getvalue())
 
     def test_missing_env_returns_1(self) -> None:
         err = io.StringIO()
         with (
             mock.patch.object(upstream_watch, "load_upstream", return_value=UPSTREAM),
             mock.patch.object(upstream_watch, "latest_pstack_commit", return_value="b" * 40),
+            mock.patch.object(
+                upstream_watch,
+                "compare_commits",
+                return_value={"status": "ahead", "ahead_by": 2, "files": []},
+            ),
             mock.patch.object(sys, "argv", ["upstream_watch.py"]),
             mock.patch.dict(upstream_watch.os.environ, {}, clear=True),
             contextlib.redirect_stderr(err),

@@ -16,6 +16,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 UPSTREAM_PATH = REPO_ROOT / "UPSTREAM.json"
 ENCODING_NAME = "cl100k_base"
 ISSUE_LABEL = "upstream-sync"
+# Land sync PRs on beta; watch must read UPSTREAM.json from this line, not main.
+INTEGRATION_BRANCH = "beta"
 GITHUB_API = "https://api.github.com"
 COMMITS_PER_PAGE = 100
 MAX_COMMIT_PAGES = 10
@@ -72,6 +74,24 @@ def compare_commits(upstream: dict[str, object], base: str, head: str) -> dict:
     repo = upstream["repo"]
     url = f"{GITHUB_API}/repos/{repo}/compare/{base}...{head}"
     return fetch_json(url)  # type: ignore[return-value]
+
+
+def is_sync_needed(last_synced: str, latest: str, compare: dict | None) -> bool:
+    """True only when upstream tip has commits not already in last_synced_sha.
+
+    last_synced_sha may sit on a non-pstack merge after the latest path commit.
+    Equality alone then false-alarms; GitHub compare status \"behind\"/\"identical\"
+    means the tracked tip already contains latest.
+    """
+    if last_synced == latest:
+        return False
+    if compare is None:
+        return True
+    status = compare.get("status")
+    if status in ("identical", "behind"):
+        return False
+    ahead = compare.get("ahead_by")
+    return isinstance(ahead, int) and ahead > 0
 
 
 def commits_touching_path(
@@ -167,7 +187,10 @@ def build_issue_body(
     lines = [
         "# Upstream pstack drift",
         "",
-        f"Tracked sync point: `{last_synced}`",
+        f"Integration line: `{INTEGRATION_BRANCH}` "
+        "(compare `UPSTREAM.json` `last_synced_sha` on this branch; land sync PRs here).",
+        "",
+        f"Tracked sync point (`last_synced_sha` on `{INTEGRATION_BRANCH}`): `{last_synced}`",
         f"Latest commit touching `{upstream['path']}/`: `{latest}`",
         "",
         f"Compare: https://github.com/{upstream['repo']}/compare/{last_synced}...{latest}",
@@ -214,8 +237,9 @@ def build_issue_body(
         [
             "",
             "---",
-            "_This issue is managed by `.github/workflows/upstream-watch.yml`. "
-            "Update skills locally and bump `last_synced_sha` in a PR when ready._",
+            "_This issue is managed by `.github/workflows/upstream-watch.yml` "
+            f"(checks out `{INTEGRATION_BRANCH}`). "
+            f"Port on `{INTEGRATION_BRANCH}`, bump `last_synced_sha`, open a sync PR there._",
         ]
     )
     return "\n".join(lines)
@@ -234,8 +258,33 @@ def find_open_issue(repo: str, token: str) -> int | None:
     return None
 
 
+def close_open_sync_issue(repo: str, token: str, last_synced: str) -> int | None:
+    """Close a stale upstream-sync issue when beta tip already covers latest."""
+    existing = find_open_issue(repo, token)
+    if existing is None:
+        return None
+    api_request(
+        "POST",
+        f"{GITHUB_API}/repos/{repo}/issues/{existing}/comments",
+        token,
+        {
+            "body": (
+                f"Closing: `{INTEGRATION_BRANCH}` `last_synced_sha` `{last_synced}` "
+                "already includes the current upstream tip (no sync needed)."
+            ),
+        },
+    )
+    api_request(
+        "PATCH",
+        f"{GITHUB_API}/repos/{repo}/issues/{existing}",
+        token,
+        {"state": "closed", "state_reason": "completed"},
+    )
+    return existing
+
+
 def dry_run_report(upstream: dict[str, object], last_synced: str, latest: str) -> int:
-    print(f"Drift: {last_synced[:7]} → {latest[:7]}")
+    print(f"Drift: {last_synced[:7]} → {latest[:7]} (integration: {INTEGRATION_BRANCH})")
     print(
         f"Compare: https://github.com/{upstream['repo']}/compare/"
         f"{last_synced}...{latest}"
@@ -260,8 +309,23 @@ def main() -> int:
     last_synced = str(upstream["last_synced_sha"])
     latest = latest_pstack_commit(upstream)
 
-    if last_synced == latest:
-        print(f"Up to date at {last_synced[:7]}")
+    compare: dict | None = None
+    if last_synced != latest:
+        compare = compare_commits(upstream, last_synced, latest)
+
+    if not is_sync_needed(last_synced, latest, compare):
+        print(
+            f"Up to date on {INTEGRATION_BRANCH} "
+            f"(last_synced_sha {last_synced[:7]}; upstream tip {latest[:7]})"
+        )
+        if dry_run:
+            return 0
+        token = os.environ.get("GITHUB_TOKEN")
+        github_repo = os.environ.get("GITHUB_REPOSITORY")
+        if token and github_repo:
+            closed = close_open_sync_issue(github_repo, token, last_synced)
+            if closed is not None:
+                print(f"Closed stale issue #{closed}")
         return 0
 
     if dry_run:
@@ -276,9 +340,12 @@ def main() -> int:
         )
         return 1
 
-    compare = compare_commits(upstream, last_synced, latest)
+    assert compare is not None
     body = build_issue_body(upstream, last_synced, latest, compare)
-    title = f"Upstream pstack sync available ({last_synced[:7]} → {latest[:7]})"
+    title = (
+        f"Upstream pstack sync available on {INTEGRATION_BRANCH} "
+        f"({last_synced[:7]} → {latest[:7]})"
+    )
 
     existing = find_open_issue(github_repo, token)
     if existing:
