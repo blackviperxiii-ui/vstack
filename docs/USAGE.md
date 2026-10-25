@@ -6,6 +6,14 @@ This repo is **blackviperxiii-ui/vstack**. It is actively maintained. Use **vsta
 
 For agents working *in this repo*, also read [AGENTS.md](../AGENTS.md). For dropping a one-liner into another project, see [CONSUMING.md](CONSUMING.md).
 
+## First 5 minutes
+
+1. **Install** — Cursor: install this repo as a plugin (see [CONSUMING.md](CONSUMING.md)). Other agents: `npx skills add blackviperxiii-ui/vstack --skill viper-mode`.
+2. **Bind the skill** — In Cursor, pick **`/viper-mode`** from the `/` menu (plain text may not attach it), then state a goal.
+3. **Try one example** — e.g. `/viper-mode Fix token_check false positive when tokens.json is fresh`. Expect playbook + root-cause fix + verify before a PR to **`beta`**.
+
+More detail: [Quick start](#quick-start) and [Concrete examples](#concrete-examples) below.
+
 ## What vstack is (plain words)
 
 Think of vstack as a playbook pack for your agent:
