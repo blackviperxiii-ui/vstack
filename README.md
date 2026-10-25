@@ -41,6 +41,9 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 ## Slash skills
 
 - **in-your-own-words**: Before substantial work, restate the user's goals and the problem in your own words (`/in-your-own-words`).
+- **sharpen**: Deepen a task (not enlarge it), then rewrite the prompt (`/sharpen`).
+- **create-formal-verification-skill**: Generate a project-local formal verification skill (`/create-formal-verification-skill`).
+- **maintain-formal-verification-skill**: Resync formal verification after code drift (`/maintain-formal-verification-skill`).
 
 ## Efficiency defaults (baked in)
 
@@ -66,7 +69,7 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
   - the PR has the `token-growth-approved` label.
 - New skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 
