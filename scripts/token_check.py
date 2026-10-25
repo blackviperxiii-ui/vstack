@@ -18,6 +18,8 @@ TOKENS_PATH = REPO_ROOT / "tokens.json"
 UPSTREAM_PATH = REPO_ROOT / "UPSTREAM.json"
 ENCODING_NAME = "cl100k_base"
 NEW_SKILL_MAX_UPSTREAM_RATIO = 0.35
+# Hard cap for vstack-native skills (no UPSTREAM.json mapping).
+ORIGINAL_SKILL_MAX_TOKENS = 400
 UPSTREAM_GROWTH_TOLERANCE = 0.05
 APPROVAL_LABEL = "token-growth-approved"
 
@@ -196,25 +198,38 @@ def main() -> int:
         if skill not in base_skills and skill in current_skills:
             status = "new"
             upstream_name = mapping.get(skill)
-            if not sync_pr:
-                errors.append(
-                    f"New skill '{skill}' is only allowed when last_synced_sha changes (sync PR)"
-                )
-                status = "rejected (not sync PR)"
-            elif not isinstance(upstream_name, str):
-                errors.append(f"New skill '{skill}' has no upstream mapping in UPSTREAM.json")
-                status = "rejected (no mapping)"
-            elif new_upstream_sha:
-                up_tokens = count_upstream_tokens(new_upstream_sha, upstream_name, upstream_meta)
-                max_allowed = int(up_tokens * NEW_SKILL_MAX_UPSTREAM_RATIO)
-                if head_t > max_allowed:
+            if isinstance(upstream_name, str):
+                if not sync_pr:
                     errors.append(
-                        f"New skill '{skill}' has {head_t} tokens; "
-                        f"max {max_allowed} (35% of upstream {upstream_name} at {up_tokens})"
+                        f"New skill '{skill}' is only allowed when last_synced_sha changes (sync PR)"
                     )
-                    status = "rejected (too large)"
+                    status = "rejected (not sync PR)"
+                elif new_upstream_sha:
+                    up_tokens = count_upstream_tokens(
+                        new_upstream_sha, upstream_name, upstream_meta
+                    )
+                    max_allowed = int(up_tokens * NEW_SKILL_MAX_UPSTREAM_RATIO)
+                    if head_t > max_allowed:
+                        errors.append(
+                            f"New skill '{skill}' has {head_t} tokens; "
+                            f"max {max_allowed} (35% of upstream {upstream_name} at {up_tokens})"
+                        )
+                        status = "rejected (too large)"
+                    else:
+                        status = f"new (≤35% upstream: {head_t}/{up_tokens})"
                 else:
-                    status = f"new (≤35% upstream: {head_t}/{up_tokens})"
+                    errors.append(
+                        f"Sync PR missing new upstream SHA for mapped skill '{skill}'"
+                    )
+                    status = "rejected (no upstream sha)"
+            elif head_t > ORIGINAL_SKILL_MAX_TOKENS:
+                errors.append(
+                    f"New original skill '{skill}' has {head_t} tokens; "
+                    f"max {ORIGINAL_SKILL_MAX_TOKENS}"
+                )
+                status = "rejected (original too large)"
+            else:
+                status = f"new (original ≤{ORIGINAL_SKILL_MAX_TOKENS})"
         elif delta > 0:
             status = "growth"
             if approved:

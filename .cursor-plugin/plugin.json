@@ -1,0 +1,22 @@
+{
+  "name": "vstack",
+  "displayName": "vstack",
+  "version": "1.0.0",
+  "description": "Viper's skill stack: viper-mode, sharpen, qa-walkthrough, root-cause fixing and formal verification skills for Cursor agents.",
+  "author": {
+    "name": "blackviperxiii-ui"
+  },
+  "homepage": "https://github.com/blackviperxiii-ui/vstack",
+  "repository": "https://github.com/blackviperxiii-ui/vstack",
+  "keywords": [
+    "vstack",
+    "viper-mode",
+    "workflow",
+    "qa",
+    "skills"
+  ],
+  "category": "developer-tools",
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "license": "MIT"
+}

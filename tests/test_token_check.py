@@ -27,6 +27,12 @@ def clean_env() -> dict[str, str]:
     return {k: v for k, v in os.environ.items() if k not in CI_ENV_KEYS}
 
 
+class OriginalSkillCapTest(unittest.TestCase):
+    def test_cap_is_lean(self) -> None:
+        self.assertEqual(token_check.ORIGINAL_SKILL_MAX_TOKENS, 400)
+        self.assertLess(token_check.ORIGINAL_SKILL_MAX_TOKENS, 1000)
+
+
 class GrowthRatioTest(unittest.TestCase):
     def test_values(self) -> None:
         self.assertEqual(token_check.growth_ratio(100, 150), 0.5)
