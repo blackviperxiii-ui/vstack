@@ -15,6 +15,13 @@ Applies to Claude Code, Cursor, Codex, and any other agent working in this repos
 
 Human-oriented how/when/examples: [docs/USAGE.md](docs/USAGE.md). Snippet for other repos: [docs/CONSUMING.md](docs/CONSUMING.md).
 
+## User-action cards (Command Centre / Notion)
+
+Any Command Centre / Notion card that needs the **user** to act (admin settings, secrets, approvals, etc.) must:
+
+1. Be **Assigned** to the user in Notion (e.g. Jeremy), not Cursor
+2. When the card is created or becomes Ready: **Slack @mention** the user with the card link(s)
+
 ## Branches
 
 - **`beta`** is the working integration branch. Land agent and day-to-day changes here.
