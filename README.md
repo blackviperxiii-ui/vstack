@@ -56,7 +56,7 @@ Full playbook set and individual principle/procedure skills can be added under `
 
 This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tree/main/pstack) in `UPSTREAM.json` (`last_synced_sha`, `mapping`, `unported`). A daily **Upstream watch** workflow opens or updates a single `upstream-sync` issue when `pstack/` moves upstream; it never edits skills for you. **Dependabot** watches `requirements-ci.txt` and GitHub Actions weekly.
 
-**Sync PRs** bump `last_synced_sha` after you port changes. **Token check** on every PR to `main`:
+**Sync PRs** bump `last_synced_sha` after you port changes. **Token check** on every PR to `main` and `beta` (see `.github/workflows/ci.yml`):
 
 - Regenerate `tokens.json` with `python scripts/count_tokens.py` (tiktoken `cl100k_base`) and commit it; CI fails if the file is stale.
 - Existing skills must not grow versus `main`, unless:
