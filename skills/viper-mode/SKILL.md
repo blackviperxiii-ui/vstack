@@ -34,9 +34,9 @@ Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, bound
 
 **Verification**
 - Prove It Works: verify the real artifact, not just compile.
-- Fix Root Causes: reproduce, trace, fix source (**principle-fix-root-causes**).
+- Fix Root Causes: first wrong decision; guard only for legitimate state (**principle-fix-root-causes**).
 - Sequence Work into Verifiable Units: small checkable steps.
-- Test Behavior, Not Implementation.
+- Test Behavior, Not Implementation: assert observable results.
 
 **Delegation & Efficiency**
 - Guard the Context Window: bulk to subagents; parent summaries only.
@@ -62,7 +62,7 @@ Fresh subagents for code/exploration. Brief scope, success criteria, principles.
 
 ## Writing
 
-Concise, direct, unslopped. No stray dashes or mid-sentence colons. Evidence before claims.
+Concise, direct, unslopped. Evidence before claims.
 
 ---
 
