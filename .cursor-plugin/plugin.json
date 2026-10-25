@@ -18,5 +18,6 @@
   "category": "developer-tools",
   "skills": "./skills/",
   "rules": "./rules/",
-  "license": "MIT"
+  "license": "MIT",
+  "logo": "assets/logo.png"
 }
