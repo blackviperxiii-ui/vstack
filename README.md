@@ -45,6 +45,8 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 - **unslop**: Cut AI tells from writing (`/unslop`).
 - **ketchup**: Catch the user up since their last message; list waiting decisions (`/ketchup`).
 - **qa-walkthrough**: App UI walk + code QA; ranked report; safe fixes as small beta PRs (`/qa-walkthrough`).
+- **create-verification-skill**: Generate a project-local skill that drives the real app and proves behavior (`/create-verification-skill`).
+- **maintain-verification-skill**: Audit a verify skill and feature map; one PR of proven fixes max (`/maintain-verification-skill`).
 - **create-formal-verification-skill**: Generate a project-local formal verification skill (`/create-formal-verification-skill`).
 - **maintain-formal-verification-skill**: Resync formal verification after code drift (`/maintain-formal-verification-skill`).
 
@@ -73,7 +75,7 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 - New **mapped** (upstream-ported) skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
 - New **original** (vstack-native, no `UPSTREAM.json` mapping) skills are allowed on any PR if they stay ≤ **400** tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`. Original: `qa-walkthrough`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`. Original: `qa-walkthrough`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 
