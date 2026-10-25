@@ -2,7 +2,7 @@
   "repo": "cursor/plugins",
   "path": "pstack",
   "branch": "main",
-  "last_synced_sha": "99b609a72323b70204eab407c622f436e858e112",
+  "last_synced_sha": "e73df471cd4bd918367e99f3dd9c51bd53ddf5f0",
   "mapping": {
     "viper-mode": "poteto-mode",
     "setup-vstack": "setup-pstack",
@@ -11,7 +11,8 @@
     "sharpen": "sharpen",
     "create-formal-verification-skill": "create-formal-verification-skill",
     "maintain-formal-verification-skill": "maintain-formal-verification-skill",
-    "unslop": "unslop"
+    "unslop": "unslop",
+    "ketchup": "ketchup"
   },
   "unported": [
     "architect",
@@ -25,7 +26,6 @@
     "figure-it-out",
     "how",
     "interrogate",
-    "ketchup",
     "ketchup-video",
     "maintain-verification-skill",
     "make-bot-ui",
