@@ -14,6 +14,8 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 - Medium/small reasoning budget preferred
 - Fresh subagents, summaries only in parent
 
+**How and when to use vstack:** [docs/USAGE.md](docs/USAGE.md). Requiring it in other repos: [docs/CONSUMING.md](docs/CONSUMING.md).
+
 ## Install
 
 ### Cursor
