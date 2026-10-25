@@ -18,7 +18,14 @@ Import this repo as a team marketplace: Cursor Dashboard, Plugins & MCPs, Team M
 
 Alternatively, submit the repo to the public Cursor Marketplace at https://cursor.com/marketplace/publish; once listed, install it from Customize or `/add-plugin vstack`.
 
-## Other agents (Claude Code, Codex, etc.)
+## Claude Code
+
+```
+/plugin marketplace add blackviperxiii-ui/vstack
+/plugin install vstack@vstack
+```
+
+## Other agents (Codex, etc.)
 
 ```bash
 npx skills add blackviperxiii-ui/vstack
