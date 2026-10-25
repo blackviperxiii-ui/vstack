@@ -2,7 +2,7 @@
   "repo": "cursor/plugins",
   "path": "pstack",
   "branch": "main",
-  "last_synced_sha": "e73df471cd4bd918367e99f3dd9c51bd53ddf5f0",
+  "last_synced_sha": "99b609a72323b70204eab407c622f436e858e112",
   "mapping": {
     "viper-mode": "poteto-mode",
     "setup-vstack": "setup-pstack",
@@ -10,7 +10,8 @@
     "in-your-own-words": "in-your-own-words",
     "sharpen": "sharpen",
     "create-formal-verification-skill": "create-formal-verification-skill",
-    "maintain-formal-verification-skill": "maintain-formal-verification-skill"
+    "maintain-formal-verification-skill": "maintain-formal-verification-skill",
+    "unslop": "unslop"
   },
   "unported": [
     "architect",
@@ -62,7 +63,6 @@
     "teach",
     "technical-writing",
     "typescript-best-practices",
-    "unslop",
     "why"
   ]
 }
