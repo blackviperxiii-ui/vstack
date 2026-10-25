@@ -14,12 +14,12 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 - Medium/small reasoning budget preferred
 - Fresh subagents, summaries only in parent
 
-**How and when to use vstack:** [docs/USAGE.md](docs/USAGE.md). Requiring it in other repos: [docs/CONSUMING.md](docs/CONSUMING.md).
+**How and when to use vstack:** [docs/USAGE.md](docs/USAGE.md). Installing it as a Cursor plugin: [docs/CONSUMING.md](docs/CONSUMING.md).
 
 ## Install
 
 ### Cursor
-Drop the `skills/` folder into `.cursor/skills/` (project) or `~/.cursor/skills/` (global).
+vstack is a Cursor plugin (`.cursor-plugin/plugin.json`). Install it once in Cursor and every agent gets it; never copy skills into project repos. See [docs/CONSUMING.md](docs/CONSUMING.md).
 
 Pick **`/viper-mode`** from the `/` menu so Cursor attaches the skill, then type your goal. Plain text `/viper-mode` may not bind the skill.
 

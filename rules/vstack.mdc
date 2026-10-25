@@ -1,0 +1,6 @@
+---
+description: "Always use the vstack skills; never pstack."
+alwaysApply: true
+---
+
+Load and follow the vstack skills from this plugin (start with viper-mode). Never use pstack or poteto-mode.
