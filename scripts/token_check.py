@@ -198,9 +198,7 @@ def main() -> int:
         if skill not in base_skills and skill in current_skills:
             status = "new"
             upstream_name = mapping.get(skill)
-            if approved:
-                status = "new (label approved)"
-            elif isinstance(upstream_name, str):
+            if isinstance(upstream_name, str):
                 if not sync_pr:
                     errors.append(
                         f"New skill '{skill}' is only allowed when last_synced_sha changes (sync PR)"

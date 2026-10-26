@@ -3,4 +3,4 @@ description: "Always use vstack skills; never pstack."
 alwaysApply: true
 ---
 
-Always load and follow the vstack skills in skills/ (start with vstack-mode); never use pstack.
+Always load and follow the vstack skills in skills/ (start with viper-mode); never use pstack.
