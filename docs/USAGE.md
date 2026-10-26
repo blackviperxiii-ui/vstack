@@ -104,7 +104,7 @@ Another project’s `AGENTS.md` includes the snippet from [CONSUMING.md](CONSUMI
 /qa-walkthrough Walk GrokHub beta end-to-end before we promote to main
 ```
 
-Expected: run the real app (UI pass across screens/flows/states), then code pass (deslop + root-cause debug + opts), one severity-ranked report with evidence. Clear/safe fixes as small PRs to **beta**; judgment items as Command Centre cards Assigned=Viper + Slack; redesign ideas stay in the report.
+Expected: run the real app (UI pass across screens/flows/states), then code pass (deslop + root-cause debug + opts), one severity-ranked report with evidence. Clear/safe fixes as small PRs to **beta**; judgment items as Command Centre cards Assigned=user + Slack; redesign ideas stay in the report.
 
 ### Example 5 — Skip the full stack
 

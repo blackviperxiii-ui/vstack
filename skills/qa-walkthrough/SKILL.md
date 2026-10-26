@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # QA Walkthrough
 
-Run before beta→main, after big features, or on “run a QA walkthrough”. Any Viper repo (GrokHub, tech-bench, genesis, tersa, vstack, …). Cite **viper-mode**; do not grow sibling skills.
+Run before beta→main, after big features, or on “run a QA walkthrough”. Any user repo (GrokHub, tech-bench, genesis, tersa, vstack, …). Cite **viper-mode**; do not grow sibling skills.
 
 ## 1. UI pass
 
@@ -25,5 +25,5 @@ Then read code. Deslop (dead code, redundant comments, needless abstractions, na
 One report ranked by severity; tag UI vs code; attach evidence.
 
 - Clear/safe fixes → small PRs into **beta**; squash-merge on green CI.
-- Needs Viper’s judgment → Command Centre card **Assigned=Viper** + Slack @mention with card link (AGENTS.md user-action rule).
+- Needs user’s judgment → Command Centre card **Assigned=user** + Slack @mention with card link (AGENTS.md user-action rule).
 - Suggestions/redesigns → report only; never silent apply.
