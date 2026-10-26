@@ -15,12 +15,6 @@ Applies to Claude Code, Cursor, Codex, and any other agent working in this repos
 
 Human-oriented how/when/examples: [docs/USAGE.md](docs/USAGE.md). Snippet for other repos: [docs/CONSUMING.md](docs/CONSUMING.md).
 
-## User-action cards (Command Centre / Notion)
-
-Any Command Centre / Notion card that needs the **user** to act (admin settings, secrets, approvals, etc.) must:
-
-1. Be **Assigned** to the user in Notion (e.g. Viper), not Cursor
-2. When the card is created or becomes Ready: **Slack @mention** the user with the card link(s)
 
 ## Branches
 
@@ -50,3 +44,7 @@ python3 scripts/check_secrets.py
 python3 -m unittest discover -s tests -p 'test_*.py' -q
 pip install -r requirements-ci.txt && python3 scripts/token_check.py
 ```
+
+## No personal info (hard rule)
+
+Never put a real name, personal email, phone, address, employer, or real home-folder path in any file, commit message, PR, or issue. Anywhere a name is needed, write "user". Paths use `/home/user`. Commits use the GitHub no-reply email. `scripts/pii-guard/pii_guard.py` runs in CI (`pii-guard` check) and blocks violations; run it locally before pushing.
