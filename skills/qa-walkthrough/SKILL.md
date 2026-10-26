@@ -1,29 +1,42 @@
 ---
 name: qa-walkthrough
-description: App UI walk + code QA; ranked report; safe fixes as small beta PRs. /qa-walkthrough
+description: Ultimate ship check. Walk the real app, review all code, hunt security holes, vulnerabilities, slop, missing tests and optimizations; fix safe items; one ranked ship/no-ship report. /qa-walkthrough
 disable-model-invocation: true
 ---
 
 # QA Walkthrough
 
-Run before beta→main, after big features, or on “run a QA walkthrough”. Any user repo (GrokHub, tech-bench, genesis, tersa, vstack, …). Cite **viper-mode**; do not grow sibling skills.
+The last gate before anything ships: run before beta→main, after big features, or on "run a QA walkthrough". Any user repo. Cite **viper-mode**; do not grow sibling skills. Goal: tested, secure, clean and ready to ship, with evidence for every claim.
 
-## 1. UI pass
+## 1. App walk
 
-Boot the real app (Playwright/browser, desktop dev, or repo-supported runner). Walk every screen, flow, and setting; empty/error/loading; light/dark and narrow/wide where applicable.
+Boot the real app (Playwright/browser, desktop dev, or the repo's runner). Walk every screen, flow and setting, including empty, error, loading, offline, first-run, light/dark and narrow/wide. Hunt bugs, UI defects (layout, overflow, contrast, alignment, broken states, style drift), a11y basics and confusing UX. Screenshot as evidence.
 
-Hunt bugs, UI defects (layout, overflow, contrast, alignment, broken states, style drift, a11y basics), and improvement ideas. Capture screenshots as evidence.
+## 2. Code review
 
-Each finding: where · repro · expected vs actual · severity · screenshot when possible.
+Read every changed area, then its neighbors. Check logic, edge cases, error handling, races, resource leaks, and that docs match behavior. Root-cause each bug via **principle-fix-root-causes**.
 
-## 2. Code pass
+## 3. Security and vulnerabilities
 
-Then read code. Deslop (dead code, redundant comments, needless abstractions, naming drift, leftover debug). Debug UI findings + reading via **principle-fix-root-causes** (reference; do not copy). Improvements/opts (perf, bundle/startup, duplicated logic, error handling) via **sharpen** / **viper-mode**.
+- Secrets, tokens or personal info in code, history, logs, config or fixtures; run the repo's pii-guard and secret scan.
+- Injection (SQL, shell, path traversal, XSS, template, prompt), unsafe deserialization, SSRF, open redirects.
+- Authn/authz gaps, missing permission or approval checks, insecure defaults, overly broad CORS, CSP or tokens.
+- Input validation and rate limits on every boundary (IPC, HTTP, CLI, files, websockets).
+- Dependencies: run the ecosystem audit (`cargo audit`, `npm audit`, `pip-audit`, Semgrep) and flag known CVEs and stale pins.
+- CI and workflows: least-privilege permissions, pinned actions, no untrusted input in `run:`.
 
-## 3. Output
+## 4. Tests
 
-One report ranked by severity; tag UI vs code; attach evidence.
+Run the full suite and the real build. Map each critical flow and each finding to a test; write missing tests for anything risky or untested. Flaky tests are findings.
 
-- Clear/safe fixes → small PRs into **beta**; squash-merge on green CI.
-- Needs user’s judgment → Command Centre card **Assigned=user** + Slack @mention with card link (AGENTS.md user-action rule).
-- Suggestions/redesigns → report only; never silent apply.
+## 5. Slop, improvements, optimizations
+
+Deslop: dead code, redundant comments, needless abstractions, naming drift, leftover debug, duplicate logic. Then improvements and optimizations via **sharpen**: performance, startup, bundle size, memory, queries, clearer UX, and simpler code.
+
+## 6. Output
+
+One report ranked by severity (critical, high, medium, low), tagged UI, code, security, tests, slop or perf, each with where, repro, expected vs actual and evidence. End with a verdict: **ship** or **no-ship** plus the blockers.
+
+- Clear, safe fixes → small PRs into **beta** with tests; squash-merge on green CI.
+- Needs user's judgment → Command Centre card **Assigned=user** + Slack @mention with card link (AGENTS.md user-action rule).
+- Redesigns and big suggestions → report only; never apply silently.
