@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # QA Walkthrough
 
-The last gate before anything ships: run before beta→main, after big features, or on "run a QA walkthrough". Any repo. Cite **vstack-mode**; do not grow sibling skills. Goal: tested, secure, clean and ready to ship, with evidence for every claim.
+The last gate before anything ships: run before beta→main, after big features, or on "run a QA walkthrough". Any repo. Cite **viper-mode**; do not grow sibling skills. Goal: tested, secure, clean and ready to ship, with evidence for every claim.
 
 ## 1. App walk
 
