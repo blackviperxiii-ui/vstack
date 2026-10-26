@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # QA Walkthrough
 
-The last gate before anything ships: run before beta→main, after big features, or on "run a QA walkthrough". Any user repo. Cite **viper-mode**; do not grow sibling skills. Goal: tested, secure, clean and ready to ship, with evidence for every claim.
+The last gate before anything ships: run before beta→main, after big features, or on "run a QA walkthrough". Any repo. Cite **vstack-mode**; do not grow sibling skills. Goal: tested, secure, clean and ready to ship, with evidence for every claim.
 
 ## 1. App walk
 
@@ -38,5 +38,5 @@ Deslop: dead code, redundant comments, needless abstractions, naming drift, left
 One report ranked by severity (critical, high, medium, low), tagged UI, code, security, tests, slop or perf, each with where, repro, expected vs actual and evidence. End with a verdict: **ship** or **no-ship** plus the blockers.
 
 - Clear, safe fixes → small PRs into **beta** with tests; squash-merge on green CI.
-- Needs user's judgment → Command Centre card **Assigned=user** + Slack @mention with card link (AGENTS.md user-action rule).
+- Needs a human decision → list it under **Needs decision** in the report with options; never guess.
 - Redesigns and big suggestions → report only; never apply silently.

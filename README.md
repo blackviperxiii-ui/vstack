@@ -1,8 +1,8 @@
-# Viper Stack (vstack)
+# vstack
 
 Token-efficient rigorous engineering skills for Cursor and other agents.
 
-**Credit:** Method and playbooks adapted from Lauren Tan (@poteto)'s pstack. All branding and naming is Viper Stack from here on. Original: https://github.com/cursor/plugins/tree/main/pstack
+**Credit:** Method and playbooks adapted from Lauren Tan (@poteto)'s pstack. Naming here is vstack. Original: https://github.com/cursor/plugins/tree/main/pstack
 
 ## What this is
 
@@ -21,22 +21,22 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 ### Cursor
 vstack is a Cursor plugin (`.cursor-plugin/plugin.json`). Install it once in Cursor and every agent gets it; never copy skills into project repos. See [docs/CONSUMING.md](docs/CONSUMING.md).
 
-Pick **`/viper-mode`** from the `/` menu so Cursor attaches the skill, then type your goal. Plain text `/viper-mode` may not bind the skill.
+Pick **`/vstack-mode`** from the `/` menu so Cursor attaches the skill, then type your goal. Plain text `/vstack-mode` may not bind the skill.
 
 ```
-/viper-mode <your goal>
+/vstack-mode <your goal>
 ```
 
 Or set it as a custom mode.
 
 ### Other agents (Claude Code, Codex, etc.)
 ```
-npx skills add blackviperxiii-ui/vstack --skill viper-mode
+npx skills add blackviperxiii-ui/vstack --skill vstack-mode
 ```
 
 ## Core skill
 
-- **viper-mode**: The main router. Matches the task to a playbook, builds a todo list, applies principles, delegates efficiently, and demands evidence before claiming done.
+- **vstack-mode**: The main router. Matches the task to a playbook, builds a todo list, applies principles, delegates efficiently, and demands evidence before claiming done.
 
 ## Slash skills
 
@@ -75,11 +75,11 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 - New **mapped** (upstream-ported) skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
 - New **original** (vstack-native, no `UPSTREAM.json` mapping) skills are allowed on any PR if they stay ≤ **400** tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`. Original: `qa-walkthrough`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `vstack-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`. Original: `qa-walkthrough`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 
-Viper Stack. Rigorous. Efficient. Yours.
+vstack. Rigorous. Efficient. Yours.
 
 ## Credits
 
