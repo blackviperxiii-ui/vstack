@@ -1,7 +1,7 @@
 {
   "name": "vstack",
   "owner": { "name": "blackviperxiii-ui" },
-  "metadata": { "description": "Viper's vstack skill stack for Cursor." },
+  "metadata": { "description": "user's vstack skill stack for Cursor." },
   "plugins": [
     {
       "name": "vstack",
