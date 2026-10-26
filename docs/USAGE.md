@@ -101,10 +101,10 @@ Another project’s `AGENTS.md` includes the snippet from [CONSUMING.md](CONSUMI
 ### Example 4 — QA walkthrough before promote
 
 ```
-/qa-walkthrough Walk GrokHub beta end-to-end before we promote to main
+/qa-walkthrough Walk the app's beta end-to-end before we promote to main
 ```
 
-Expected: run the real app (UI pass across screens/flows/states), then code pass (deslop + root-cause debug + opts), one severity-ranked report with evidence. Clear/safe fixes as small PRs to **beta**; judgment items as Command Centre cards Assigned=Viper + Slack; redesign ideas stay in the report.
+Expected: run the real app (UI pass across screens/flows/states), then code pass (deslop + root-cause debug + opts), one severity-ranked report with evidence. Clear/safe fixes as small PRs to **beta**; decisions listed under Needs decision; redesign ideas stay in the report.
 
 ### Example 5 — Skip the full stack
 
