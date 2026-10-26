@@ -14,7 +14,9 @@
     "unslop": "unslop",
     "ketchup": "ketchup",
     "create-verification-skill": "create-verification-skill",
-    "maintain-verification-skill": "maintain-verification-skill"
+    "maintain-verification-skill": "maintain-verification-skill",
+    "ketchup-video": "ketchup-video",
+    "statechart": "statechart"
   },
   "unported": [
     "architect",
@@ -27,7 +29,6 @@
     "figure-it-out",
     "how",
     "interrogate",
-    "ketchup-video",
     "make-bot-ui",
     "no-comments",
     "poteto-help",
@@ -57,7 +58,6 @@
     "recall",
     "reflect",
     "show-me-your-work",
-    "statechart",
     "swarm",
     "tdd",
     "teach",
