@@ -4,7 +4,7 @@
   "branch": "main",
   "last_synced_sha": "99b609a72323b70204eab407c622f436e858e112",
   "mapping": {
-    "viper-mode": "poteto-mode",
+    "vstack-mode": "poteto-mode",
     "setup-vstack": "setup-pstack",
     "principle-fix-root-causes": "principle-fix-root-causes",
     "in-your-own-words": "in-your-own-words",

@@ -6,7 +6,7 @@
     {
       "name": "vstack",
       "source": "./",
-      "description": "Viper's skill stack for Cursor agents."
+      "description": "A skill stack for Cursor agents."
     }
   ]
 }

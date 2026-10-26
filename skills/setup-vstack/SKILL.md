@@ -1,6 +1,6 @@
 ---
 name: setup-vstack
-description: Configure Viper Stack for token efficiency. Writes an always-applied Auto / Composer Standard rule.
+description: Configure vstack for token efficiency. Writes an always-applied Auto / Composer Standard rule.
 ---
 
 # Setup Vstack
@@ -15,7 +15,7 @@ Write `~/.cursor/rules/vstack-models.mdc` (or project `.cursor/rules/`) so every
 
 ```
 ---
-description: Viper Stack models — Auto / Composer Standard
+description: vstack models — Auto / Composer Standard
 alwaysApply: true
 ---
 # budget: medium (high)

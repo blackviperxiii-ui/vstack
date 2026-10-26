@@ -1,12 +1,12 @@
 ---
-name: viper-mode
-description: Viper Stack rigor with concise replies, deliberate subagents, verified work. Auto or Composer 2.5 Standard. /viper-mode or serious playbooks.
+name: vstack-mode
+description: vstack rigor with concise replies, deliberate subagents, verified work. Auto or Composer 2.5 Standard. /vstack-mode or serious playbooks.
 disable-model-invocation: true
 icon: snake
 color: green
 ---
 
-# Viper Mode
+# vstack mode
 
 Token-efficient orchestrator (poteto credit once). Default Auto / Composer 2.5 Standard.
 
@@ -56,7 +56,7 @@ Else: short auditable procedure, then follow it.
 
 ## Subagents
 
-`/viper-mode` runs playbooks and spawns delegates; never delegate the whole playbook (nested agents lack Task).
+`/vstack-mode` runs playbooks and spawns delegates; never delegate the whole playbook (nested agents lack Task).
 
 Fresh subagents for code/exploration. Brief scope, success criteria, principles. Review yourself. Sequential unless independent and large.
 
@@ -66,4 +66,4 @@ Concise, direct, unslopped. Evidence before claims.
 
 ---
 
-Viper Stack. Deep first. Efficient always.
+vstack. Deep first. Efficient always.
