@@ -19,7 +19,7 @@ More detail: [Quick start](#quick-start) and [Concrete examples](#concrete-examp
 Think of vstack as a playbook pack for your agent:
 
 1. **`viper-mode`** is the main router. It picks a playbook, builds a short todo list, applies principles (smallest fix, verify the real artifact, fix root causes), and uses subagents carefully so the parent chat stays short.
-2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), one named principle (`principle-fix-root-causes`), and app QA (`qa-walkthrough`).
+2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), one named principle (`principle-fix-root-causes`), app QA (`qa-walkthrough`), and AV QA (`av-qa-walkthrough`).
 3. Repo tooling (`scripts/`, CI) keeps skills lean (token budgets) and safe (lint, secret scan). That tooling is for *maintaining* vstack; day-to-day *use* is loading the skills.
 
 Credit for the method goes to Lauren Tan’s pstack. Naming and branding here are Viper Stack only.
@@ -34,6 +34,7 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 | Bugs, refactors, perf work, shipping PRs, reviews | Yes |
 | Multi-step or ambiguous work where you want a playbook + evidence | Yes |
 | Before promoting beta→main, after big features, or “run a QA walkthrough” | Yes — `/qa-walkthrough` (UI pass + code pass + ranked report) |
+| Shipping or changing audio/video playback, sync, codecs, or devices | Yes — `/av-qa-walkthrough` (objective AV pass + ranked report) |
 | Agent work in a repo that requires vstack (this one, or a consumer with the AGENTS snippet) | **Must** — load `skills/`, start with `viper-mode` |
 | Quick factual Q&A, one-liner edits, pure brainstorming | Optional; skip if a full playbook adds noise |
 
@@ -106,6 +107,14 @@ Another project’s `AGENTS.md` includes the snippet from [CONSUMING.md](CONSUMI
 
 Expected: run the real app (UI pass across screens/flows/states), then code pass (deslop + root-cause debug + opts), one severity-ranked report with evidence. Clear/safe fixes as small PRs to **beta**; decisions listed under Needs decision; redesign ideas stay in the report.
 
+### Example 4b — AV QA before ship
+
+```
+/av-qa-walkthrough Verify player beta on reference clips before we promote to main
+```
+
+Expected: exercise playback/sync/devices on hardware when available; otherwise tag **not hand-tested on device**. Objective checks with `ffprobe -show_streams`, `ffmpeg` filters such as `ebur128` and `blackdetect`, and frame counts; one severity-ranked report with command output or captures as evidence.
+
 ### Example 5 — Skip the full stack
 
 User asks: “What does `UPSTREAM.json` map?” A direct read of the file is enough. No need to force a multi-step playbook unless the user asks for a deeper audit.
@@ -119,6 +128,7 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `in-your-own-words` | Restate goals before substantial work |
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
 | `qa-walkthrough` | UI + code QA; ranked report; safe fixes → beta PRs |
+| `av-qa-walkthrough` | AV playback/sync/quality/devices; ffprobe/ffmpeg evidence; ranked report |
 
 ## Related
 
