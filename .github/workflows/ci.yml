@@ -7,6 +7,10 @@ on:
     branches: [main, beta]
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
   workflow_dispatch:
+  merge_group:
+  # Nightly full run (3:25 AM Central during CDT).
+  schedule:
+    - cron: "25 8 * * *"
 
 permissions:
   contents: read
@@ -18,9 +22,41 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# PRs run lint (skill lint, secret check, unit tests) and token-check. Each is
+# gated by a job-level `if:` on the `changes` output, never a workflow-level
+# path filter, so a skipped required check still reports as passed. Push,
+# nightly, manual and merge_group runs always run both.
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ github.event_name != 'pull_request' || steps.filter.outputs.code == 'true' }}
+      tokens: ${{ github.event_name != 'pull_request' || steps.filter.outputs.tokens == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '**'
+              - '!docs/**'
+              - '!assets/**'
+              - '!README.md'
+            tokens:
+              - '**'
+              - '!docs/**'
+              - '!assets/**'
+              - '!README.md'
+              - '!tests/**'
+
   lint:
     name: lint
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -34,6 +70,8 @@ jobs:
 
   token-check:
     name: token-check
+    needs: changes
+    if: needs.changes.outputs.tokens == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
