@@ -45,10 +45,28 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 - **unslop**: Cut AI tells from writing (`/unslop`).
 - **ketchup**: Catch the user up since their last message; list waiting decisions (`/ketchup`).
 - **qa-walkthrough**: App UI walk + code QA; ranked report; safe fixes as small beta PRs (`/qa-walkthrough`).
+- **av-qa-walkthrough**: Audio/video playback, sync, quality, devices, streaming; ffprobe/ffmpeg evidence; ranked report (`/av-qa-walkthrough`).
+- **follow-through**: Task ledger, check-ins, stall detection, proactive status; proven done and handoff (`/follow-through`).
 - **create-verification-skill**: Generate a project-local skill that drives the real app and proves behavior (`/create-verification-skill`).
 - **maintain-verification-skill**: Audit a verify skill and feature map; one PR of proven fixes max (`/maintain-verification-skill`).
 - **create-formal-verification-skill**: Generate a project-local formal verification skill (`/create-formal-verification-skill`).
 - **maintain-formal-verification-skill**: Resync formal verification after code drift (`/maintain-formal-verification-skill`).
+- **how** / **why**: How a subsystem works; why it is shaped that way, with cited evidence (`/how`, `/why`).
+- **teach**: Plain explanation built from how + why, at the reader's pace (`/teach`).
+- **recall**: Rebuild recent working context into a current-state brief (`/recall`).
+- **architect**: Sketch types and module boundaries before code, then implement against the sketch (`/architect`).
+- **figure-it-out**: Design an auditable playbook when none fits (`/figure-it-out`).
+- **show-me-your-work**: Append-only TSV decision trail for long or unattended runs (`/show-me-your-work`).
+- **blast-radius**: What a change breaks beyond the diff; prove the one safety fact by running code (`/blast-radius`).
+- **interrogate**: Adversarial review where only run-proven findings survive (`/interrogate`).
+- **tdd**: Failing test first, only when the test path is cheap (`/tdd`).
+- **correct**: Make repeated agent mistakes impossible via architecture, types, lint, tests (`/correct`).
+- **reflect**: Turn this chat's learnings into skill edits, after approval (`/reflect`).
+- **swarm**: Fan out parallel workers for coverage or races; one report (`/swarm`).
+- **benchmark-checklist**: Vet a perf number before reporting it (`/benchmark-checklist`).
+- **technical-writing**: Layered standard for docs, PR bodies, commits (`/technical-writing`).
+- **typescript-best-practices**: Type-safe TS rules, auto-scoped to `.ts`/`.tsx`.
+- **principle-\***: One skill per principle `viper-mode` cites (prove it works, model the domain, boundary discipline, and more).
 
 ## Efficiency defaults (baked in)
 
@@ -60,7 +78,7 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 
 ## Expand later
 
-Full playbook set and individual principle/procedure skills can be added under `skills/` as needed. The orchestrator already encodes the method.
+Still unported from pstack (see `UPSTREAM.json` `unported`): `arena` (multi-model panels, off by default here), `automate-me`, `make-bot-ui`, `no-comments` (needs a pstack agent), `poteto-help`, `bro`, and principles too small to port under the 35% token cap (their one-liners live in `viper-mode`).
 
 ## Upstream sync and token budget
 
@@ -75,7 +93,7 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 - New **mapped** (upstream-ported) skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
 - New **original** (vstack-native, no `UPSTREAM.json` mapping) skills are allowed on any PR if they stay ≤ **400** tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`. Original: `qa-walkthrough`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 

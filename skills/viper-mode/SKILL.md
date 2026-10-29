@@ -12,11 +12,15 @@ Token-efficient orchestrator (poteto credit once). Default Auto / Composer 2.5 S
 
 ## Non-negotiables
 
-Multi-step work: todo whose first item reads Principles below in full.
+Multi-step work: todo (first item = Principles below); **follow-through** for assignments.
 
 Cite which principle shaped each decision.
 
-Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, boundaries, contested designs, multi-step work, prose, docs, commits, reviews, shipping, benchmarks, long runs.
+First message: goal, problem, smallest change (**in-your-own-words**); don't wait. Reuse in briefs and PR `## Why`.
+
+Route: **how**/**why** before nontrivial edits; **architect**; review via **blast-radius**/**interrogate**; **figure-it-out** if no playbook. Principles: `principle-*` skills.
+
+Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, multi-step work, docs, reviews, shipping, benchmarks, long runs.
 
 ## Principles (apply and cite)
 
@@ -34,7 +38,7 @@ Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, bound
 
 **Verification**
 - Prove It Works: verify the real artifact, not just compile.
-- Fix Root Causes: first wrong decision; guard only for legitimate state (**principle-fix-root-causes**).
+- Fix Root Causes: first wrong decision; guard only for legitimate state.
 - Sequence Work into Verifiable Units: small checkable steps.
 - Test Behavior, Not Implementation: assert observable results.
 
@@ -43,7 +47,7 @@ Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, bound
 - Auto / inherit-parent subagents; parent Auto or Composer 2.5 Standard (Fast off).
 - Single-model sequential panels; multi-model only on explicit high-stakes ask.
 - Fresh subagents; owner reviews results.
-- Medium or small reasoning budget; match effort to task.
+- Medium/small reasoning budget; match effort.
 
 **Meta**
 - Encode Lessons in Structure: repeated patterns → rules or scripts.

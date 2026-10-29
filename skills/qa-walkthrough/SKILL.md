@@ -6,11 +6,11 @@ disable-model-invocation: true
 
 # QA Walkthrough
 
-The last gate before anything ships: run before beta→main, after big features, or on "run a QA walkthrough". Any repo. Cite **viper-mode**; do not grow sibling skills. Goal: tested, secure, clean and ready to ship, with evidence for every claim.
+Last gate before ship: beta→main, big features, or "run a QA walkthrough". Any repo. AV output → **av-qa-walkthrough**. Cite **viper-mode**; no sibling skill growth. Goal: tested, secure, clean, evidence for every claim.
 
 ## 1. App walk
 
-Boot the real app (Playwright/browser, desktop dev, or the repo's runner). Walk every screen, flow and setting, including empty, error, loading, offline, first-run, light/dark and narrow/wide. Hunt bugs, UI defects (layout, overflow, contrast, alignment, broken states, style drift), a11y basics and confusing UX. Screenshot as evidence.
+Boot the real app (Playwright/browser, desktop dev, or the repo's runner). Walk screens, flows, settings: empty, error, loading, offline, first-run, light/dark, narrow/wide. Hunt bugs, UI defects (layout, overflow, contrast, alignment, broken states, style drift), a11y and confusing UX. Screenshot evidence.
 
 ## 2. Code review
 
@@ -31,12 +31,12 @@ Run the full suite and the real build. Map each critical flow and each finding t
 
 ## 5. Slop, improvements, optimizations
 
-Deslop: dead code, redundant comments, needless abstractions, naming drift, leftover debug, duplicate logic. Then improvements and optimizations via **sharpen**: performance, startup, bundle size, memory, queries, clearer UX, and simpler code.
+Deslop: dead code, redundant comments, needless abstractions, naming drift, leftover debug, duplicate logic. **sharpen**: performance, startup, bundle size, memory, queries, clearer UX.
 
 ## 6. Output
 
 One report ranked by severity (critical, high, medium, low), tagged UI, code, security, tests, slop or perf, each with where, repro, expected vs actual and evidence. End with a verdict: **ship** or **no-ship** plus the blockers.
 
 - Clear, safe fixes → small PRs into **beta** with tests; squash-merge on green CI.
-- Needs a human decision → list it under **Needs decision** in the report with options; never guess.
+- Needs a human decision → **Needs decision** with options; never guess.
 - Redesigns and big suggestions → report only; never apply silently.
