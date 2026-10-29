@@ -1,6 +1,6 @@
 ---
 name: how
-description: "How does X work", walkthroughs before a change, where code should live. Use why for motivation. /how.
+description: How does X work? Walkthroughs before a change, where code should live. Use why for motivation. /how.
 disable-model-invocation: true
 ---
 
