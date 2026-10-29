@@ -16,7 +16,11 @@ Multi-step work: todo (first item = Principles below); **follow-through** for as
 
 Cite which principle shaped each decision.
 
-Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, boundaries, contested designs, multi-step work, docs, commits, reviews, shipping, benchmarks, long runs.
+First message: goal, problem, smallest change (**in-your-own-words**); don't wait. Reuse in briefs and PR `## Why`.
+
+Route: **how**/**why** before nontrivial edits; **architect**; review via **blast-radius**/**interrogate**; **figure-it-out** if no playbook. Principles: `principle-*` skills.
+
+Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, multi-step work, docs, reviews, shipping, benchmarks, long runs.
 
 ## Principles (apply and cite)
 
@@ -34,7 +38,7 @@ Rigor when: nontrivial code, architecture, ambiguous forks, data modeling, bound
 
 **Verification**
 - Prove It Works: verify the real artifact, not just compile.
-- Fix Root Causes: first wrong decision; guard only for legitimate state (**principle-fix-root-causes**).
+- Fix Root Causes: first wrong decision; guard only for legitimate state.
 - Sequence Work into Verifiable Units: small checkable steps.
 - Test Behavior, Not Implementation: assert observable results.
 

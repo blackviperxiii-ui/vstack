@@ -9,7 +9,7 @@ Always load and follow the vstack skills in `skills/` (start with `viper-mode`).
 Applies to Claude Code, Cursor, Codex, and any other agent working in this repository.
 
 1. **Must use vstack** for nontrivial work here: code, scripts, CI, docs that change agent behavior, reviews, and shipping. Load `skills/` before planning or editing; read `skills/viper-mode/SKILL.md` first.
-2. **How:** Follow `viper-mode` (playbook + principles + evidence). Use supporting skills as needed (`setup-vstack`, `in-your-own-words`, `principle-fix-root-causes`, `qa-walkthrough`, `av-qa-walkthrough`). Prefer Auto / Composer 2.5 Standard; keep parent context short; verify before claiming done.
+2. **How:** Follow `viper-mode` (playbook + principles + evidence). Use supporting skills as needed (`setup-vstack`, `in-your-own-words`, `how`, `why`, `architect`, `blast-radius`, `principle-*`, `qa-walkthrough`, `av-qa-walkthrough`). Prefer Auto / Composer 2.5 Standard; keep parent context short; verify before claiming done.
 3. **Never use pstack** (or `poteto-mode`) in this repo. Upstream pstack is tracked only via `UPSTREAM.json` and sync tooling — not as the active skill pack.
 4. **Do not grow skill files** for prose. Put usage guidance in `docs/USAGE.md` (and consumer snippets in `docs/CONSUMING.md`) so token-check stays green.
 
