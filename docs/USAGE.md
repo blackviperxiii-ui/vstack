@@ -19,7 +19,7 @@ More detail: [Quick start](#quick-start) and [Concrete examples](#concrete-examp
 Think of vstack as a playbook pack for your agent:
 
 1. **`viper-mode`** is the main router. It picks a playbook, builds a short todo list, applies principles (smallest fix, verify the real artifact, fix root causes), and uses subagents carefully so the parent chat stays short.
-2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), one named principle (`principle-fix-root-causes`), app QA (`qa-walkthrough`), and AV QA (`av-qa-walkthrough`).
+2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), understanding code (`how`, `why`, `teach`, `recall`), design (`architect`, `figure-it-out`), review (`blast-radius`, `interrogate`), bugs (`tdd`), app QA (`qa-walkthrough`, `av-qa-walkthrough`), and one `principle-*` skill per principle `viper-mode` cites.
 3. Repo tooling (`scripts/`, CI) keeps skills lean (token budgets) and safe (lint, secret scan). That tooling is for *maintaining* vstack; day-to-day *use* is loading the skills.
 
 Credit for the method goes to Lauren Tan’s pstack. Naming and branding here are Viper Stack only.
