@@ -1,7 +1,6 @@
 ---
 name: principle-outcome-oriented-execution
 description: Planned rewrites and migrations with phase boundaries. Converge on the target; skip throwaway compatibility code.
-disable-model-invocation: true
 ---
 
 # Outcome-Oriented Execution

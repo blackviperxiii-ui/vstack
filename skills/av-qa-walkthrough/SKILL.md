@@ -1,7 +1,6 @@
 ---
 name: av-qa-walkthrough
 description: AV ship gate. Playback, sync, codecs, devices; ffprobe/ffmpeg; ship/no-ship. /av-qa-walkthrough
-disable-model-invocation: true
 ---
 
 # AV QA Walkthrough

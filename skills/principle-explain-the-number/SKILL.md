@@ -1,7 +1,6 @@
 ---
 name: principle-explain-the-number
 description: Before measuring or trusting a measured number. Find its limiter.
-disable-model-invocation: true
 ---
 
 # Explain the Number

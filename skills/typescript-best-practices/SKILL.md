@@ -2,7 +2,6 @@
 name: typescript-best-practices
 description: TypeScript rules for .ts/.tsx files.
 paths: ["**/*.ts", "**/*.tsx"]
-disable-model-invocation: true
 ---
 
 # TypeScript best practices

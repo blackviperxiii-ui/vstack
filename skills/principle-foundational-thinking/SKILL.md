@@ -1,7 +1,6 @@
 ---
 name: principle-foundational-thinking
 description: Before writing logic. Data structures first; scaffold before features.
-disable-model-invocation: true
 ---
 
 # Foundational Thinking

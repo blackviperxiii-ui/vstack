@@ -1,7 +1,6 @@
 ---
 name: principle-type-system-discipline
 description: Designing types or signatures. Make illegal states unrepresentable.
-disable-model-invocation: true
 ---
 
 # Type System Discipline

@@ -1,7 +1,6 @@
 ---
 name: blast-radius
 description: What a change could break beyond the diff; prove the one fact it's safe because of by running real code. /blast-radius.
-disable-model-invocation: true
 ---
 
 # Blast radius
