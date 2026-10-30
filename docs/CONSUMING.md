@@ -12,6 +12,8 @@ ln -sfn ~/vstack ~/.cursor/plugins/local/vstack
 
 Reload Cursor. Update with `git -C ~/vstack pull`.
 
+Or install a tagged release without git: `curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash`. Rerun it to update.
+
 ## All agents, including Cloud Agents and Projects
 
 Import this repo as a team marketplace: Cursor Dashboard, Plugins & MCPs, Team Marketplaces, Add Marketplace, Import from Repo, paste `https://github.com/blackviperxiii-ui/vstack`. Set vstack to Required and turn on Auto Refresh. Running agents keep the version they started with; new agents pick up updates.
