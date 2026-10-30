@@ -1,7 +1,6 @@
 ---
 name: principle-separate-before-serializing-shared-state
 description: Concurrent writers to one target. Remove the sharing; lock only for a real invariant.
-disable-model-invocation: true
 ---
 
 1. Find shared mutable state.

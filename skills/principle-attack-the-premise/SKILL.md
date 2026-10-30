@@ -1,7 +1,6 @@
 ---
 name: principle-attack-the-premise
 description: Fixes sharing one premise keep failing the same gate. Test the premise first.
-disable-model-invocation: true
 ---
 
 # Attack the Premise

@@ -1,7 +1,6 @@
 ---
 name: principle-make-operations-idempotent
 description: Steps that run amid crashes and retries. Same end state however prior runs ended.
-disable-model-invocation: true
 ---
 
 # Make Operations Idempotent

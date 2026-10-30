@@ -1,7 +1,6 @@
 ---
 name: figure-it-out
 description: Design an auditable playbook when none fits; big migrations, multi-part changes, work reviewed later. /figure-it-out.
-disable-model-invocation: true
 ---
 
 # Figure it out

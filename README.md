@@ -18,6 +18,19 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 
 ## Install
 
+### One-line installer (from the latest release)
+
+```bash
+# Cursor (local plugin)
+curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash
+# Claude Code (personal skills)
+curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target claude
+# Any agent that reads a skills folder
+curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target dir --dir path/to/skills
+```
+
+The installer checks the download's SHA-256 against the release. Pin a version with `--version 1.1.0`. Tarball and zip downloads are on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [CHANGELOG.md](CHANGELOG.md) lists what changed.
+
 ### Cursor
 vstack is a Cursor plugin (`.cursor-plugin/plugin.json`). Install it once in Cursor and every agent gets it; never copy skills into project repos. See [docs/CONSUMING.md](docs/CONSUMING.md).
 
@@ -79,6 +92,12 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 ## Expand later
 
 Still unported from pstack (see `UPSTREAM.json` `unported`): `arena` (multi-model panels, off by default here), `automate-me`, `make-bot-ui`, `no-comments` (needs a pstack agent), `poteto-help`, `bro`, and principles too small to port under the 35% token cap (their one-liners live in `viper-mode`).
+
+## Releasing
+
+1. Bump `VERSION`, the `version` in both `plugin.json` files and both `marketplace.json` files, and add a `CHANGELOG.md` section.
+2. Land it on `beta`, then promote to `main`.
+3. Run **Actions → Release → Run workflow** on `main`. It checks that the versions agree, runs lint and tests, builds `vstack-<version>.tar.gz`, `.zip`, and `SHA256SUMS` with `scripts/package_release.sh`, and publishes the `v<version>` tag and GitHub Release.
 
 ## Upstream sync and token budget
 

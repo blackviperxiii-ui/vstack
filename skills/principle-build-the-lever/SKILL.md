@@ -1,7 +1,6 @@
 ---
 name: principle-build-the-lever
 description: Non-trivial work. Build the script, codemod, or check that does or proves it.
-disable-model-invocation: true
 ---
 
 # Build the Lever

@@ -1,7 +1,6 @@
 ---
 name: principle-model-the-domain
 description: Stateful logic or heavy branching. Encode the domain in a structure.
-disable-model-invocation: true
 ---
 
 # Model the Domain
