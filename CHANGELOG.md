@@ -17,6 +17,11 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 - `viper-mode` restates the goal and smallest change on the first message, then routes to the new skills.
 - `ketchup-video` adds a subtitle strip and measured slide holds.
 - Synced to upstream pstack `c742dd6`.
+- Agents can load `viper-mode`, the principle skills, and the core workflow skills on their own; you no longer need a slash command for each.
+
+### Fixed
+
+- `how` and `why` frontmatter now parses as YAML.
 
 ## 1.0.0
 
