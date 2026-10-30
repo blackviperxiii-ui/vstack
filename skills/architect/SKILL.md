@@ -1,7 +1,6 @@
 ---
 name: architect
 description: Sketch types, signatures, and module boundaries before code; implement against the sketch. "Design this". /architect.
-disable-model-invocation: true
 ---
 
 # Architect

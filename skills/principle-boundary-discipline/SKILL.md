@@ -1,7 +1,6 @@
 ---
 name: principle-boundary-discipline
 description: Validation, errors, adapters. Guard at boundaries; trust types inside; pure logic.
-disable-model-invocation: true
 ---
 
 # Boundary Discipline

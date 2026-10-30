@@ -1,7 +1,6 @@
 ---
 name: tdd
 description: Failing test first for a bug, only when asked or the test path is cheap and obvious. /tdd.
-disable-model-invocation: true
 ---
 
 # TDD Bug Fix

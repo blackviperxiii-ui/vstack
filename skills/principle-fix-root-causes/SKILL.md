@@ -1,7 +1,6 @@
 ---
 name: principle-fix-root-causes
 description: Debugging. Fix first wrong decision; guards only for legitimate state.
-disable-model-invocation: true
 ---
 
 # Fix Root Causes

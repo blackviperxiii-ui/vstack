@@ -1,7 +1,6 @@
 ---
 name: viper-mode
 description: Viper Stack rigor with concise replies, deliberate subagents, verified work. Auto or Composer 2.5 Standard. /viper-mode or serious playbooks.
-disable-model-invocation: true
 icon: snake
 color: green
 ---

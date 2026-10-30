@@ -1,7 +1,6 @@
 ---
 name: principle-test-behavior-not-implementation
 description: Writing or keeping a test. Assert what users observe, not internals.
-disable-model-invocation: true
 ---
 
 # Test Behavior, Not Implementation

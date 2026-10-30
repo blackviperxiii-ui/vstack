@@ -1,7 +1,6 @@
 ---
 name: principle-minimize-reader-load
 description: Hard-to-trace code. Fewer layers to trace, less state to hold.
-disable-model-invocation: true
 ---
 
 # Minimize Reader Load
