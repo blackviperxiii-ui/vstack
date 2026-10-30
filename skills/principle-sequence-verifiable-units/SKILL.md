@@ -1,7 +1,6 @@
 ---
 name: principle-sequence-verifiable-units
 description: Multi-step work and commit stacks. Small units, each checked before the next.
-disable-model-invocation: true
 ---
 
 # Sequence Work into Verifiable Units

@@ -1,7 +1,6 @@
 ---
 name: principle-prove-it-works
 description: Before declaring done. Verify the real artifact, not a proxy.
-disable-model-invocation: true
 ---
 
 # Prove It Works

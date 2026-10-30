@@ -1,7 +1,6 @@
 ---
 name: interrogate
 description: Adversarial review; only findings proven by a run survive. "Tear this apart". /interrogate.
-disable-model-invocation: true
 ---
 
 # Interrogate

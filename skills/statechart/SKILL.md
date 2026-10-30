@@ -1,7 +1,6 @@
 ---
 name: statechart
 description: Mermaid statechart of how a system moves; bugs as numbered paths. Use for /statechart.
-disable-model-invocation: true
 ---
 
 # Statechart
