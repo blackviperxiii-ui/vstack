@@ -1,6 +1,6 @@
 ---
 name: why
-description: "Why does X work this way", design rationale, regressions, postmortems, where a number came from. Cited read across every evidence source. Use how for runtime. /why.
+description: Why does X work this way? Design rationale, regressions, postmortems, where a number came from. Cited read across every evidence source. Use how for runtime. /why.
 disable-model-invocation: true
 ---
 
