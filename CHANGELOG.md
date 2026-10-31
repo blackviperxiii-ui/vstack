@@ -4,6 +4,10 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Added
+
+- `stageshow`, a design skill for faux product UI stills, cursor demos and bento grids, vendored from Stageshow by Benji Taylor (MIT) at upstream `8020574`. Its short `SKILL.md` stays under the 400-token cap and points to the full `GUIDE.md`.
+
 ### Changed
 
 - `docs/ci-policy.md` lists which CI jobs run on which event. The nightly CI run skips a commit that already passed CI, and every job has a timeout.
