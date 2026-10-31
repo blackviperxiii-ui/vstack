@@ -26,15 +26,35 @@ concurrency:
 # PRs run lint (skill lint, secret check, unit tests) and token-check. Each is
 # gated by a job-level `if:` on the `changes` output, never a workflow-level
 # path filter, so a skipped required check still reports as passed. Push,
-# nightly, manual and merge_group runs always run both.
+# manual and merge_group runs always run both; the nightly runs both unless
+# its commit already passed CI. See docs/ci-policy.md.
 jobs:
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
     outputs:
-      code: ${{ github.event_name != 'pull_request' || steps.filter.outputs.code == 'true' }}
-      tokens: ${{ github.event_name != 'pull_request' || steps.filter.outputs.tokens == 'true' }}
+      code: ${{ steps.nightly.outputs.passed != 'true' && (github.event_name != 'pull_request' || steps.filter.outputs.code == 'true') }}
+      tokens: ${{ steps.nightly.outputs.passed != 'true' && (github.event_name != 'pull_request' || steps.filter.outputs.tokens == 'true') }}
     steps:
+      # A nightly on a commit that already passed a push, nightly or manual CI
+      # run would only repeat it. If the lookup fails, the nightly runs.
+      - name: Skip nightly if this commit already passed
+        id: nightly
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          passed=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${GITHUB_SHA}&status=success&per_page=50" \
+            --jq '[.workflow_runs[] | select(.event == "push" or .event == "schedule" or .event == "workflow_dispatch")] | length' 2>/dev/null) || passed=0
+          case "$passed" in ''|*[!0-9]*) passed=0 ;; esac
+          if [ "$passed" -gt 0 ]; then
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+            echo "${GITHUB_SHA} already passed CI; skipping the nightly rerun."
+          fi
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter

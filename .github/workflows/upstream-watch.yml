@@ -13,16 +13,17 @@ jobs:
   watch:
     name: upstream drift issue
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       # Integration line is beta — main lags and would reopen stale sync issues.
       - uses: actions/checkout@v7
         with:
           ref: beta
+      # No pip cache, as in ci.yml: a refused cache restore can stall for
+      # 10 minutes, and the uncached install takes about 2 seconds.
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: requirements-ci.txt
       - run: pip install -r requirements-ci.txt
       - run: python scripts/upstream_watch.py
         env:
