@@ -20,7 +20,14 @@ install_tiktoken_stub()
 
 import token_check  # noqa: E402
 
-CI_ENV_KEYS = {"GITHUB_EVENT_PATH", "GITHUB_BASE_SHA", "GITHUB_STEP_SUMMARY"}
+CI_ENV_KEYS = {
+    "GITHUB_EVENT_PATH",
+    "GITHUB_EVENT_NAME",
+    "GITHUB_BASE_SHA",
+    "GITHUB_STEP_SUMMARY",
+    "GITHUB_REPOSITORY",
+    "GITHUB_TOKEN",
+}
 
 
 def clean_env() -> dict[str, str]:
@@ -88,7 +95,7 @@ class PrEventTest(unittest.TestCase):
         self.use_event(None)
         self.assertEqual(token_check.pr_event(), {})
         self.assertFalse(token_check.pr_has_label("token-growth-approved"))
-        self.assertIsNone(token_check.pr_base_sha())
+        self.assertIsNone(token_check.diff_base_sha())
 
     def test_label_present_and_absent(self) -> None:
         self.use_event(
@@ -107,11 +114,27 @@ class PrEventTest(unittest.TestCase):
 
     def test_base_sha_from_event(self) -> None:
         self.use_event({"pull_request": {"base": {"sha": "abc123"}}}, {"GITHUB_BASE_SHA": "env456"})
-        self.assertEqual(token_check.pr_base_sha(), "abc123")
+        self.assertEqual(token_check.diff_base_sha(), "abc123")
 
     def test_base_sha_falls_back_to_env(self) -> None:
         self.use_event({"pull_request": {"base": {}}}, {"GITHUB_BASE_SHA": "env456"})
-        self.assertEqual(token_check.pr_base_sha(), "env456")
+        self.assertEqual(token_check.diff_base_sha(), "env456")
+
+    def test_push_uses_previous_tip(self) -> None:
+        self.use_event({"before": "old1", "after": "new1"}, {"GITHUB_EVENT_NAME": "push"})
+        self.assertEqual(token_check.diff_base_sha(), "old1")
+
+    def test_new_branch_push_has_no_base(self) -> None:
+        self.use_event({"before": "0" * 40, "after": "new1"}, {"GITHUB_EVENT_NAME": "push"})
+        self.assertIsNone(token_check.diff_base_sha())
+
+    def test_merge_group_base(self) -> None:
+        self.use_event({"merge_group": {"base_sha": "mg1"}}, {"GITHUB_EVENT_NAME": "merge_group"})
+        self.assertEqual(token_check.diff_base_sha(), "mg1")
+
+    def test_schedule_has_no_base(self) -> None:
+        self.use_event({"schedule": "25 8 * * *"}, {"GITHUB_EVENT_NAME": "schedule"})
+        self.assertIsNone(token_check.diff_base_sha())
 
 
 class WriteSummaryTest(unittest.TestCase):
@@ -162,6 +185,82 @@ class SyncPrStateTest(unittest.TestCase):
     def test_unchanged_sha(self) -> None:
         base = json.dumps({"last_synced_sha": "same"})
         self.assertEqual(self.run_state({"last_synced_sha": "same"}, base, "b"), (False, None, None))
+
+
+class MainByEventTest(unittest.TestCase):
+    """main() on push and schedule runs, where the PR payload is absent.
+
+    Push runs used to compare against an empty base, so every skill counted as
+    new and any original skill over the cap failed every beta push and nightly.
+    """
+
+    BASE = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 600, "bytes": 1}}}
+    UPSTREAM = {"last_synced_sha": "up1", "mapping": {}}
+
+    def run_main(self, event: dict, name: str, head: dict, pr_labels: list[str] | None = None):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        event_path = Path(tmp.name) / "event.json"
+        event_path.write_text(json.dumps(event), encoding="utf-8")
+        tokens_path = Path(tmp.name) / "tokens.json"
+        tokens_path.write_text(json.dumps(head), encoding="utf-8")
+        upstream_path = Path(tmp.name) / "UPSTREAM.json"
+        upstream_path.write_text(json.dumps(self.UPSTREAM), encoding="utf-8")
+        env = clean_env()
+        env.update(
+            {
+                "GITHUB_EVENT_PATH": str(event_path),
+                "GITHUB_EVENT_NAME": name,
+                "GITHUB_REPOSITORY": "o/r",
+            }
+        )
+        base_files = {"tokens.json": json.dumps(self.BASE), "UPSTREAM.json": json.dumps(self.UPSTREAM)}
+        pulls = [{"labels": [{"name": n} for n in pr_labels or []]}]
+        with (
+            mock.patch.dict(os.environ, env, clear=True),
+            mock.patch.object(token_check, "TOKENS_PATH", tokens_path),
+            mock.patch.object(token_check, "UPSTREAM_PATH", upstream_path),
+            mock.patch.object(token_check, "run_count_tokens", return_value=head),
+            mock.patch.object(token_check, "commit_exists", return_value=True),
+            mock.patch.object(token_check, "git_show", side_effect=lambda ref, path: base_files.get(path)),
+            mock.patch.object(token_check, "github_api", return_value=pulls) as api,
+            mock.patch.object(token_check, "count_upstream_tokens") as upstream,
+            mock.patch("sys.stderr"),
+            mock.patch("sys.stdout"),
+        ):
+            code = token_check.main()
+        upstream.assert_not_called()
+        return code, api
+
+    def test_push_without_changes_passes(self) -> None:
+        code, api = self.run_main({"before": "b1", "after": "a1"}, "push", self.BASE)
+        self.assertEqual(code, 0)
+        api.assert_not_called()
+
+    def test_schedule_checks_staleness_only(self) -> None:
+        code, _ = self.run_main({}, "schedule", self.BASE)
+        self.assertEqual(code, 0)
+
+    def test_push_growth_still_fails_without_label(self) -> None:
+        head = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 650, "bytes": 1}}}
+        code, api = self.run_main({"before": "b1", "after": "a1"}, "push", head)
+        self.assertEqual(code, 1)
+        api.assert_called_once_with("/repos/o/r/commits/a1/pulls")
+
+    def test_push_growth_passes_with_merged_pr_label(self) -> None:
+        head = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 650, "bytes": 1}}}
+        code, _ = self.run_main(
+            {"before": "b1", "after": "a1"}, "push", head, pr_labels=["token-growth-approved"]
+        )
+        self.assertEqual(code, 0)
+
+    def test_new_original_over_cap_still_fails_on_push(self) -> None:
+        head = {
+            "encoding": "cl100k_base",
+            "skills": {**self.BASE["skills"], "fresh": {"tokens": 401, "bytes": 1}},
+        }
+        code, _ = self.run_main({"before": "b1", "after": "a1"}, "push", head)
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":
