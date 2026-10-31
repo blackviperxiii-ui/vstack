@@ -17,9 +17,10 @@ permissions:
   pull-requests: read
 
 # A newer push to the same PR or to beta cancels the run it replaces; only the
-# newest beta commit needs a result. Pushes to main always finish.
+# newest beta commit needs a result. The group includes the event, so a push
+# never cancels a manual or nightly run. Pushes to main always finish.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/beta') }}
 
 # PRs run lint (skill lint, secret check, unit tests) and token-check. Each is
