@@ -112,6 +112,8 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 - New **mapped** (upstream-ported) skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
 - New **original** (vstack-native, no `UPSTREAM.json` mapping) skills are allowed on any PR if they stay ≤ **400** tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
+Pushes to `main` and `beta` run the same limits against the commit before the push, reading the `token-growth-approved` label from the merged PR. Nightly and manual runs have no base, so they check only that `tokens.json` is fresh.
+
 Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`. Other upstream skills stay listed under `unported` until you add them.
 
 ---

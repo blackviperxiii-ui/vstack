@@ -16,11 +16,12 @@ permissions:
   contents: read
   pull-requests: read
 
-# A newer push to the same PR cancels the run it replaces. Pushes to beta and
-# main always finish.
+# A newer push to the same PR or to beta cancels the run it replaces; only the
+# newest beta commit needs a result. The group includes the event, so a push
+# never cancels a manual or nightly run. Pushes to main always finish.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/beta') }}
 
 # PRs run lint (skill lint, secret check, unit tests) and token-check. Each is
 # gated by a job-level `if:` on the `changes` output, never a workflow-level
@@ -73,15 +74,18 @@ jobs:
     needs: changes
     if: needs.changes.outputs.tokens == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      # No pip cache: the install is one small wheel set (~2 s), while a
+      # cache restore can stall for 10 min when the cache service refuses it.
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: requirements-ci.txt
       - run: pip install -r requirements-ci.txt
+      # The token lets push runs read the merged PR's labels.
       - run: python scripts/token_check.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
