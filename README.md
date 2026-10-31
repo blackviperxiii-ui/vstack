@@ -81,6 +81,10 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 - **typescript-best-practices**: Type-safe TS rules, auto-scoped to `.ts`/`.tsx`.
 - **principle-\***: One skill per principle `viper-mode` cites (prove it works, model the domain, boundary discipline, and more).
 
+## Design skills
+
+- **stageshow**: Faux product UI stills, cursor demos and bento grids in React, with a kit, gold examples and a filming check (`/stageshow`). Vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (MIT). The short `SKILL.md` loads first and sends the agent to the full `GUIDE.md`; `skills/stageshow/VENDORED.md` records the upstream commit and local changes. Previewing or filming needs Node 20.19+ (`npm install` in `skills/stageshow`) and a local Chrome.
+
 ## Efficiency defaults (baked in)
 
 - Models: auto / inherit parent (set parent to Auto or Composer 2.5 Standard with Fast off)

@@ -129,6 +129,7 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
 | `qa-walkthrough` | UI + code QA; ranked report; safe fixes → beta PRs |
 | `av-qa-walkthrough` | AV playback/sync/quality/devices; ffprobe/ffmpeg evidence; ranked report |
+| `stageshow` | Faux product UI stills, cursor demos, bento grids (React); reads `GUIDE.md`, copies a gold example, films and fixes. Vendored, MIT |
 
 ## Related
 
