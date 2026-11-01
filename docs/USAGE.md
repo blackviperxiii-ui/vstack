@@ -115,6 +115,26 @@ Expected: run the real app (UI pass across screens/flows/states), then code pass
 
 Expected: exercise playback/sync/devices on hardware when available; otherwise tag **not hand-tested on device**. Objective checks with `ffprobe -show_streams`, `ffmpeg` filters such as `ebur128` and `blackdetect`, and frame counts; one severity-ranked report with command output or captures as evidence.
 
+### Example 4c — Keep an app current
+
+```
+/updater Check what in this app needs updating and bump what's safe
+```
+
+Expected: `python3 skills/updater/scripts/updater.py run --repo .` inventories the repo's support surfaces and checks each against its upstream (crates.io sparse index, npm and PyPI registries, the RustSec advisory database or `cargo audit`, `npm audit`, the Rust and Node release feeds, action tags over `git ls-remote`, Blizzard's version service for `.toc` interface numbers, Mojang's version manifest, provider model lists). It writes `report.md`, `findings.json` and `inventory.json` to `~/.cache/vstack-updater/<repo>`, never into the repo.
+
+Each finding has an action:
+
+| Action | Meaning |
+|--------|---------|
+| `auto` | Safe and mechanical. `updater.py bump --area cargo\|npm\|pypi\|wow`, run the repo's checks, one PR per area. |
+| `card` | Needs a person or a migration: majors, unsound or unmaintained crates, fixes that need a major. |
+| `manual` | Verify first, for example model ids missing from the provider's list. |
+| `watch` | Nothing to do now: API hosts, launchers, mod sources, newest models. |
+| `guarded` | Anti-cheat and safety lists. Never edited by an update. |
+
+When a source is blocked from the shell, the report's "Unchecked sources" names a file. Fetch the URL with any other tool, save the raw body under `<out>/fetched/<file>` and rerun; `--offline` uses only saved files. Model lists use the provider's own `/models` endpoint when `XAI_API_KEY`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set, and OpenRouter's public list otherwise. `--wow-ptr` adds test realms; `--probe-mods` pings mod source APIs.
+
 ### Example 5 — Skip the full stack
 
 User asks: “What does `UPSTREAM.json` map?” A direct read of the file is enough. No need to force a multi-step playbook unless the user asks for a deeper audit.
@@ -129,6 +149,7 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
 | `qa-walkthrough` | UI + code QA; ranked report; safe fixes → beta PRs |
 | `av-qa-walkthrough` | AV playback/sync/quality/devices; ffprobe/ffmpeg evidence; ranked report |
+| `updater` | Find what needs updating (deps, advisories, toolchains, CI, addons, models, APIs); safe bumps as PRs, the rest as cards |
 | `stageshow` | Faux product UI stills, cursor demos, bento grids (React); reads `GUIDE.md`, copies a gold example, films and fixes. Vendored, MIT |
 
 ## Related
