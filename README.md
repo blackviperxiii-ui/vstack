@@ -60,6 +60,7 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 - **qa-walkthrough**: App UI walk + code QA; ranked report; safe fixes as small beta PRs (`/qa-walkthrough`).
 - **av-qa-walkthrough**: Audio/video playback, sync, quality, devices, streaming; ffprobe/ffmpeg evidence; ranked report (`/av-qa-walkthrough`).
 - **follow-through**: Task ledger, check-ins, stall detection, proactive status; proven done and handoff (`/follow-through`).
+- **updater**: Find every part of an app that needs updating (deps, advisories, toolchains, CI actions, game addons, mod sources, model ids, APIs); safe bumps as one PR per area, the rest as cards (`/updater`).
 - **create-verification-skill**: Generate a project-local skill that drives the real app and proves behavior (`/create-verification-skill`).
 - **maintain-verification-skill**: Audit a verify skill and feature map; one PR of proven fixes max (`/maintain-verification-skill`).
 - **create-formal-verification-skill**: Generate a project-local formal verification skill (`/create-formal-verification-skill`).
@@ -118,7 +119,7 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 
 Pushes to `main` and `beta` run the same limits against the commit before the push, reading the `token-growth-approved` label from the merged PR. Nightly and manual runs have no base, so they check only that `tokens.json` is fresh.
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 
