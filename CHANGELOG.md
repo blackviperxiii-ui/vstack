@@ -11,6 +11,7 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ### Changed
 
+- `viper-mode`, the always-apply rules, and agent docs now require RPE (Research, then Plan, then Execute) before edits, and waiting only on real (not CI-only) conflicts with other open work.
 - `docs/ci-policy.md` lists which CI jobs run on which event. The nightly CI run skips a commit that already passed CI, and every job has a timeout.
 
 ### Fixed
