@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -22,6 +23,8 @@ NEW_SKILL_MAX_UPSTREAM_RATIO = 0.35
 ORIGINAL_SKILL_MAX_TOKENS = 400
 UPSTREAM_GROWTH_TOLERANCE = 0.05
 APPROVAL_LABEL = "token-growth-approved"
+API_TIMEOUT_SECONDS = 15
+UPSTREAM_TIMEOUT_SECONDS = 20
 
 
 def run_count_tokens() -> dict[str, object]:
@@ -56,6 +59,10 @@ def pr_event() -> dict[str, object]:
     return json.loads(Path(event_path).read_text(encoding="utf-8"))
 
 
+def event_name() -> str:
+    return os.environ.get("GITHUB_EVENT_NAME", "")
+
+
 def pr_has_label(label_name: str) -> bool:
     event = pr_event()
     pull_request = event.get("pull_request")
@@ -67,16 +74,103 @@ def pr_has_label(label_name: str) -> bool:
     )
 
 
-def pr_base_sha() -> str | None:
+def github_api(path: str) -> object:
+    """GET a GitHub REST path with the job token; short timeout, no retries."""
+    api = os.environ.get("GITHUB_API_URL", "https://api.github.com")
+    request = urllib.request.Request(f"{api}{path}")
+    request.add_header("Accept", "application/vnd.github+json")
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        request.add_header("Authorization", f"Bearer {token}")
+    with urllib.request.urlopen(request, timeout=API_TIMEOUT_SECONDS) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def merged_pr_labels() -> set[str] | None:
+    """Labels of the PR that produced this push or merge_group commit.
+
+    Push and merge_group payloads carry no labels, so the approval label has to
+    be read from the PR itself. None means the PR could not be found or read.
+    """
     event = pr_event()
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not repo:
+        return None
+    try:
+        name = event_name()
+        if name == "push":
+            sha = event.get("after")
+            if not isinstance(sha, str):
+                return None
+            pulls = github_api(f"/repos/{repo}/commits/{sha}/pulls")
+        elif name == "merge_group":
+            group = event.get("merge_group") or {}
+            head_ref = group.get("head_ref", "") if isinstance(group, dict) else ""
+            match = re.search(r"/pr-(\d+)-", str(head_ref))
+            if not match:
+                return None
+            pulls = [github_api(f"/repos/{repo}/pulls/{match.group(1)}")]
+        else:
+            return None
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+        print(f"Could not read PR labels: {exc}", file=sys.stderr)
+        return None
+    if not isinstance(pulls, list):
+        return None
+    return {
+        label["name"]
+        for pull in pulls
+        if isinstance(pull, dict)
+        for label in pull.get("labels") or []
+        if isinstance(label, dict) and isinstance(label.get("name"), str)
+    }
+
+
+def growth_approved(label_name: str) -> bool:
+    if pr_has_label(label_name):
+        return True
+    if event_name() in ("push", "merge_group"):
+        labels = merged_pr_labels()
+        return bool(labels and label_name in labels)
+    return False
+
+
+def commit_exists(sha: str) -> bool:
+    return (
+        subprocess.run(
+            ["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+            cwd=REPO_ROOT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
+
+
+def diff_base_sha() -> str | None:
+    """The commit this run's changes are measured against.
+
+    pull_request: the PR base. merge_group: the queue base. push: the branch tip
+    before the push (absent for a new branch). Other events (schedule,
+    workflow_dispatch) have no base unless GITHUB_BASE_SHA is set.
+    """
+    event = pr_event()
+    candidates: list[object] = []
     pull_request = event.get("pull_request")
     if isinstance(pull_request, dict):
         base = pull_request.get("base") or {}
         if isinstance(base, dict):
-            sha = base.get("sha")
-            if isinstance(sha, str):
-                return sha
-    return os.environ.get("GITHUB_BASE_SHA")
+            candidates.append(base.get("sha"))
+    merge_group = event.get("merge_group")
+    if isinstance(merge_group, dict):
+        candidates.append(merge_group.get("base_sha"))
+    if event_name() == "push":
+        candidates.append(event.get("before"))
+    candidates.append(os.environ.get("GITHUB_BASE_SHA"))
+    for sha in candidates:
+        if isinstance(sha, str) and sha.strip("0"):
+            return sha
+    return None
 
 
 def sync_pr_state(base_sha: str | None) -> tuple[bool, str | None, str | None]:
@@ -109,14 +203,14 @@ def count_upstream_tokens(sha: str, upstream_skill: str, upstream_meta: dict) ->
         f"{path}/skills/{upstream_skill}/SKILL.md"
     )
     try:
-        with urllib.request.urlopen(url, timeout=60) as resp:
+        with urllib.request.urlopen(url, timeout=UPSTREAM_TIMEOUT_SECONDS) as resp:
             text = resp.read().decode("utf-8")
     except urllib.error.HTTPError:
         url_branch = (
             f"https://raw.githubusercontent.com/{repo}/{branch}/"
             f"{path}/skills/{upstream_skill}/SKILL.md"
         )
-        with urllib.request.urlopen(url_branch, timeout=60) as resp:
+        with urllib.request.urlopen(url_branch, timeout=UPSTREAM_TIMEOUT_SECONDS) as resp:
             text = resp.read().decode("utf-8")
     enc = tiktoken.get_encoding(ENCODING_NAME)
     return len(enc.encode(text))
@@ -158,14 +252,37 @@ def main() -> int:
             "tokens.json is stale; run: python scripts/count_tokens.py and commit tokens.json"
         )
 
-    base_sha = pr_base_sha()
-    base_tokens_raw = git_show(base_sha, "tokens.json") if base_sha else None
+    base_sha = diff_base_sha()
+    if base_sha and not commit_exists(base_sha):
+        errors.append(
+            f"Base commit {base_sha} is not in this checkout; growth limits cannot be checked"
+        )
+        base_sha = None
+    if base_sha is None:
+        # Growth limits are relative to a base. Without one (schedule,
+        # workflow_dispatch, first push of a branch) only staleness is checked;
+        # an empty base would wrongly turn every skill into a new skill.
+        if errors:
+            for err in errors:
+                print(err, file=sys.stderr)
+            return 1
+        print(f"token check OK (tokens.json fresh; no diff base for '{event_name() or 'local'}' run)")
+        return 0
+
+    base_tokens_raw = git_show(base_sha, "tokens.json")
     base_tokens: dict[str, object] = (
         json.loads(base_tokens_raw) if base_tokens_raw else {"skills": {}}
     )
 
     sync_pr, old_upstream_sha, new_upstream_sha = sync_pr_state(base_sha)
-    approved = pr_has_label(APPROVAL_LABEL)
+    approved: bool | None = None
+
+    def is_approved() -> bool:
+        # Looked up only when a skill is new or grew: on push it costs an API call.
+        nonlocal approved
+        if approved is None:
+            approved = growth_approved(APPROVAL_LABEL)
+        return approved
     upstream_meta = load_json(UPSTREAM_PATH)
     mapping = upstream_meta.get("mapping", {})
     if not isinstance(mapping, dict):
@@ -198,7 +315,7 @@ def main() -> int:
         if skill not in base_skills and skill in current_skills:
             status = "new"
             upstream_name = mapping.get(skill)
-            if approved:
+            if is_approved():
                 status = "new (label approved)"
             elif isinstance(upstream_name, str):
                 if not sync_pr:
@@ -234,7 +351,7 @@ def main() -> int:
                 status = f"new (original ≤{ORIGINAL_SKILL_MAX_TOKENS})"
         elif delta > 0:
             status = "growth"
-            if approved:
+            if is_approved():
                 status = "growth (label approved)"
             elif sync_pr and isinstance(upstream_name := mapping.get(skill), str):
                 if old_upstream_sha and new_upstream_sha:
