@@ -391,10 +391,16 @@ class Fetcher:
         self.offline = offline
         self.timeout = timeout
         self.misses: dict[str, str] = {}
+        # Saved bodies read this run: file name -> bytes, listed in the report.
+        self.used: dict[str, int] = {}
+
+    def saved(self, url: str) -> Path:
+        return self.dir / fetched_name(url)
 
     def text(self, url: str, headers: dict | None = None, secret: bool = False) -> str | None:
-        saved = self.dir / fetched_name(url)
+        saved = self.saved(url)
         if saved.is_file():
+            self.used[saved.name] = saved.stat().st_size
             return saved.read_text(encoding="utf-8", errors="replace")
         if self.offline:
             self.misses[url] = "offline"
@@ -420,7 +426,13 @@ class Fetcher:
         try:
             return json.loads(body)
         except json.JSONDecodeError:
+            if not secret:
+                self.unusable(url)
             return None
+
+    def unusable(self, url: str) -> None:
+        """A body came back but held nothing usable: keep the source unchecked."""
+        self.misses[url] = "saved body unparseable, truncated?" if self.saved(url).is_file() else "response unparseable"
 
 
 def run_cmd(args: list[str], cwd: Path, timeout: int = 300) -> tuple[int, str]:
@@ -644,7 +656,8 @@ def check_actions(f: Fetcher, repo: Path, surfaces: list[Surface]) -> list[Findi
         url = f"https://github.com/{s.name}"
         saved = f.dir / fetched_name(url + ".tags")
         if saved.is_file():
-            tags_text = saved.read_text(encoding="utf-8")
+            f.used[saved.name] = saved.stat().st_size
+            tags_text = saved.read_text(encoding="utf-8", errors="replace")
         elif f.offline:
             f.misses[url] = "offline"
             continue
@@ -656,6 +669,8 @@ def check_actions(f: Fetcher, repo: Path, surfaces: list[Surface]) -> list[Findi
         tags = [parse_version(t.rsplit("/", 1)[-1]) for t in tags_text.split()]
         tags = [t for t in tags if t]
         if not tags:
+            if saved.is_file():
+                f.misses[url] = "saved body unparseable, truncated?"
             continue
         newest = max(tags)
         for ref in s.current.split(" | "):
@@ -709,12 +724,16 @@ def wow_builds(f: Fetcher, products: dict[str, str]) -> dict[str, str]:
     """Live client builds per product from Blizzard's version service."""
     out = {}
     for product in products:
-        body = f.text(f"https://us.version.battle.net/v2/products/{product}/versions")
+        url = f"https://us.version.battle.net/v2/products/{product}/versions"
+        body = f.text(url)
         for line in (body or "").splitlines():
             cols = line.split("|")
             if cols and cols[0] == "us" and len(cols) > 5:
                 out[product] = cols[5]
                 break
+        else:
+            if body is not None:
+                f.unusable(url)
     return out
 
 
@@ -770,8 +789,12 @@ def check_models(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
                 source[fam] = "official"
     missing = [fam for fam in families if fam not in catalog and fam in OPENROUTER_PREFIX]
     if missing:
-        data = f.json("https://openrouter.ai/api/v1/models") or {}
-        for m in data.get("data", []):
+        url = "https://openrouter.ai/api/v1/models"
+        data = f.json(url)
+        if data is not None and not (isinstance(data, dict) and isinstance(data.get("data"), list)):
+            f.unusable(url)
+        rows = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), list) else []
+        for m in rows:
             mid = m.get("id", "")
             for fam in missing:
                 pre = OPENROUTER_PREFIX[fam]
@@ -850,7 +873,8 @@ def rank(findings: list[Finding]) -> list[Finding]:
     return sorted(findings, key=lambda x: (SEVERITY_ORDER.get(x.severity, 9), x.area, x.surface))
 
 
-def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, str], repo: Path, limit: int) -> str:
+def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, str], repo: Path, limit: int,
+           used: dict[str, int] | None = None) -> str:
     ranked = rank(findings)
     actionable = [x for x in ranked if x.action in ("auto", "card", "manual") and x.severity != "info"]
     lines = [f"# Updater report: {repo.name}", ""]
@@ -891,6 +915,9 @@ def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, s
         lines += ["", "Unchecked sources (fetch elsewhere, save under fetched/<file>, rerun):"]
         for url, why in sorted(misses.items()):
             lines.append(f"- {url} ({why}) -> {fetched_name(url + ('.tags' if url.count('/') == 4 and 'github.com' in url else ''))}")
+    if used:
+        lines += ["", "Saved bodies used (fetched/):"]
+        lines += [f"- {name} ({size} bytes)" for name, size in sorted(used.items())]
     return "\n".join(lines) + "\n"
 
 
@@ -1002,7 +1029,7 @@ def run(repo: Path, out: Path, offline: bool, limit: int, probe_mods: bool, wow_
     findings += check_watch(f, surfaces, probe_mods)
     findings = rank(findings)
     (out / "findings.json").write_text(json.dumps([asdict(x) for x in findings], indent=1), encoding="utf-8")
-    report = render(findings, surfaces, f.misses, repo, limit)
+    report = render(findings, surfaces, f.misses, repo, limit, f.used)
     (out / "report.md").write_text(report, encoding="utf-8")
     return report
 

@@ -132,6 +132,47 @@ class OfflineRunTest(RepoTestCase):
             updater.bump(self.repo, self.out, "anticheat")
 
 
+class SavedBodyTest(RepoTestCase):
+    WOW = {"wow": "12.1.5.1", "wow_classic": "5.5.4.1", "wow_classic_era": "1.15.9.1", "wow_anniversary": "2.5.6.1"}
+    ROUTER = "https://openrouter.ai/api/v1/models"
+
+    def version_url(self, product: str) -> str:
+        return f"https://us.version.battle.net/v2/products/{product}/versions"
+
+    def test_unusable_saved_bodies_stay_unchecked(self) -> None:
+        for product, build in self.WOW.items():
+            self.fetched(self.version_url(product), version_service(build))
+        # A Blizzard body with no us row, and an OpenRouter list cut off mid-file.
+        self.fetched(self.version_url("wow"), version_service("12.1.5.1").replace("\nus|", "\nkr|"))
+        self.fetched(self.ROUTER, '{"data": [{"id": "openai/gpt-5.1", "created": 1')
+        report = updater.run(self.repo, self.out, offline=True, limit=40, probe_mods=False, wow_ptr=False)
+        unchecked = report.split("Unchecked sources", 1)[1]
+        self.assertIn(f"- {self.version_url('wow')} (saved body unparseable, truncated?)", unchecked)
+        self.assertIn(f"- {self.ROUTER} (saved body unparseable, truncated?)", unchecked)
+        # The good bodies are used, not flagged.
+        self.assertNotIn(self.version_url("wow_classic"), unchecked)
+        # Each saved file used is listed with its size.
+        router = self.out / "fetched" / updater.fetched_name(self.ROUTER)
+        self.assertIn(f"- {router.name} ({router.stat().st_size} bytes)", report.split("Saved bodies used", 1)[1])
+
+    def test_a_parsed_body_with_no_rows_is_unchecked_and_a_good_one_is_not(self) -> None:
+        self.fetched(self.ROUTER, '{"error": "rate limited"}')
+        f = updater.Fetcher(self.out, offline=True)
+        updater.check_models(f, updater.inventory(self.repo))
+        self.assertEqual(f.misses.get(self.ROUTER), "saved body unparseable, truncated?")
+        self.fetched(self.ROUTER, '{"data": [{"id": "openai/gpt-5.1", "created": 1}]}')
+        f = updater.Fetcher(self.out, offline=True)
+        updater.check_models(f, updater.inventory(self.repo))
+        self.assertNotIn(self.ROUTER, f.misses)
+
+    def test_an_empty_saved_tag_list_is_unchecked(self) -> None:
+        url = "https://github.com/actions/checkout"
+        self.fetched(url + ".tags", "")
+        f = updater.Fetcher(self.out, offline=True)
+        updater.check_actions(f, self.repo, updater.inventory(self.repo))
+        self.assertEqual(f.misses.get(url), "saved body unparseable, truncated?")
+
+
 class RustsecTest(RepoTestCase):
     def test_matches_lockfile_against_advisory_db(self) -> None:
         lock = self.write("Cargo.lock", 'version = 4\n\n[[package]]\nname = "demo"\nversion = "0.3.1"\n'
