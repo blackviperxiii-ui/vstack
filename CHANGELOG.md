@@ -4,6 +4,8 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.2.0
+
 ### Added
 
 - `land-it`, a skill that deep-dives a whole app for product-feel misses (UX that never quite lands, weak interactivity, QoL gaps, code shortfalls) and ranks low-effort fixes (`/land-it`).
