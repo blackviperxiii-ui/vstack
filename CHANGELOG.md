@@ -4,6 +4,11 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Added
+
+- `optimize`, a skill for app performance work: measure the real artifact, rank hot spots, fix root causes, remeasure (`/optimize`).
+- `bag-and-tag`, a skill for the promote ritual: beta→main, VERSION/CHANGELOG bump, annotated tag, GitHub Release artifacts, installer verify (`/bag-and-tag`).
+
 ### Changed
 
 - `setup-vstack` installs and configures vstack for the current coding agent (Cursor, Claude Code, Codex, Antigravity, Muse, Windsurf, OpenCode, Grok Build); Cursor-only model rule; see `docs/CONSUMING.md`.

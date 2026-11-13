@@ -28,7 +28,7 @@ Instead of defaulting to expensive frontier-model committees, `vstack` defaults 
 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
-- **53 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
+- **55 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
 - **Multi-agent packaging**: Ships native plugin manifests for Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)) and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)), plus installers for portable `.agents/skills/` and `.grok/skills/` layouts.
 - **CI-enforced token caps**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and blocks unapproved prompt growth on pull requests and branch pushes.
 
@@ -123,7 +123,7 @@ If skills live under `.agents/skills/` (or `.claude/skills/` or `.grok/skills/`)
 RPE: Research, Plan, then Execute; no edits before a written plan.
 ```
 
-See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/land-it`, `/qa-walkthrough`, `/av-qa-walkthrough`, and `/updater`).
+See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/land-it`, `/optimize`, `/bag-and-tag`, `/qa-walkthrough`, `/av-qa-walkthrough`, and `/updater`).
 
 ## Skill catalog
 
@@ -148,6 +148,8 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - **`blast-radius`**: Traces what a change can break beyond the diff and proves safety by running code (`/blast-radius`).
 - **`interrogate`**: Runs an adversarial review where only run-proven findings survive (`/interrogate`).
 - **`land-it`**: Audits whole-app product feel, interactivity, UX gaps, and code shortfalls, then ranks low-effort fixes (`/land-it`).
+- **`optimize`**: Measures real artifacts, finds hot spots, fixes root causes, and remeasures app performance (`/optimize`).
+- **`bag-and-tag`**: Promotes `beta` → `main`, bumps VERSION/CHANGELOG, tags `vX.Y.Z`, publishes release artifacts, and verifies install paths (`/bag-and-tag`).
 - **`qa-walkthrough`**: Runs an end-to-end UI and code QA pass and produces a severity-ranked report (`/qa-walkthrough`).
 - **`av-qa-walkthrough`**: Audits audio/video playback, sync, devices, and streams using `ffprobe` and `ffmpeg` evidence (`/av-qa-walkthrough`).
 - **`updater`**: Audits Cargo, npm, PyPI, RustSec, toolchains, GitHub Actions, WoW `.toc` versions, Minecraft releases, and model IDs via `skills/updater/scripts/updater.py` (`/updater`).
@@ -218,7 +220,7 @@ This repository tracks [`cursor/plugins` (`pstack`)](https://github.com/cursor/p
 - New **mapped** skills (listed in `UPSTREAM.json` `mapping`) are allowed only on sync PRs and must be `<= 35%` of the upstream skill's token count at the new SHA.
 - New **original** skills (not in `UPSTREAM.json` `mapping`) are allowed on any PR if they stay `<= 400` tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Currently [`UPSTREAM.json`](UPSTREAM.json) maps 47 ported skills, while 6 skills are `vstack`-original (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`). Upstream skills intentionally omitted under the token budget (`arena`, `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
+Currently [`UPSTREAM.json`](UPSTREAM.json) maps 47 ported skills, while 8 skills are `vstack`-original (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `optimize`, `bag-and-tag`). Upstream skills intentionally omitted under the token budget (`arena`, `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
 
 ## Contributing
 
