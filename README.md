@@ -16,7 +16,28 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 
 **How and when to use vstack:** [docs/USAGE.md](docs/USAGE.md). Installing it as a Cursor plugin: [docs/CONSUMING.md](docs/CONSUMING.md).
 
+## Works with
+
+| Platform | How |
+|----------|-----|
+| Cursor, Claude Code | First-class plugins / marketplaces |
+| Codex, Antigravity, Muse Code, Windsurf/Cascade, OpenCode | First-class via `.agents/skills/` (+ `AGENTS.md`) |
+| Grok Build | First-class via `.grok/skills/` |
+| Grok Bot / GrokHub | Optional documented consume (AGENTS.md); do not force into GrokHub |
+| Aider, Continue | Documented-generic (`AGENTS.md`); skills deferred until hosts confirm SKILL.md paths |
+
+Full matrix and commands: [docs/CONSUMING.md](docs/CONSUMING.md).
+
 ## Install
+
+### From a clone (project-local, preferred for non-plugin hosts)
+
+```bash
+./scripts/install_for.sh --host agents --project /path/to/your-app
+./scripts/install_for.sh --host cursor --global    # Cursor plugin symlink
+./scripts/install_for.sh --host claude --global
+./scripts/install_for.sh --host grok --project /path/to/your-app
+```
 
 ### One-line installer (from the latest release)
 
@@ -25,6 +46,10 @@ A reworked, self-contained set of agent skills that keep the rigor (playbooks, p
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash
 # Claude Code (personal skills)
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target claude
+# Portable Agent Skills dir (Codex / Muse / Windsurf / OpenCode / Antigravity compat)
+curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target agents
+# Grok Build (personal skills)
+curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target grok
 # Any agent that reads a skills folder
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target dir --dir path/to/skills
 ```
@@ -32,7 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/insta
 The installer checks the download's SHA-256 against the release. Pin a version with `--version 1.1.0`. Tarball and zip downloads are on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [CHANGELOG.md](CHANGELOG.md) lists what changed.
 
 ### Cursor
-vstack is a Cursor plugin (`.cursor-plugin/plugin.json`). Install it once in Cursor and every agent gets it; never copy skills into project repos. See [docs/CONSUMING.md](docs/CONSUMING.md).
+vstack is a Cursor plugin (`.cursor-plugin/plugin.json`). Install it once in Cursor and every agent gets it; do not hand-copy skills into project repos. See [docs/CONSUMING.md](docs/CONSUMING.md).
 
 Pick **`/viper-mode`** from the `/` menu so Cursor attaches the skill, then type your goal. Plain text `/viper-mode` may not bind the skill.
 
@@ -42,7 +67,7 @@ Pick **`/viper-mode`** from the `/` menu so Cursor attaches the skill, then type
 
 Or set it as a custom mode.
 
-### Other agents (Claude Code, Codex, etc.)
+### Other agents (Codex helper)
 ```
 npx skills add blackviperxiii-ui/vstack --skill viper-mode
 ```

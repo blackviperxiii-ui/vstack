@@ -17,8 +17,8 @@ for manifest in .claude-plugin/plugin.json .cursor-plugin/plugin.json; do
 done
 
 mkdir -p "$stage/$name"
-for path in skills rules assets docs .claude-plugin .cursor-plugin \
-	README.md LICENSE CHANGELOG.md VERSION install.sh; do
+for path in skills rules assets docs .claude-plugin .cursor-plugin scripts \
+	README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md; do
 	cp -R "$root/$path" "$stage/$name/"
 done
 
