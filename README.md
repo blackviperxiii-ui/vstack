@@ -1,156 +1,254 @@
-# Viper Stack (vstack)
+# vstack
 
-Token-efficient rigorous engineering skills for Cursor and other agents.
+[![CI](https://github.com/blackviperxiii-ui/vstack/actions/workflows/ci.yml/badge.svg)](https://github.com/blackviperxiii-ui/vstack/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/blackviperxiii-ui/vstack)](https://github.com/blackviperxiii-ui/vstack/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Credit:** Method and playbooks adapted from Lauren Tan (@poteto)'s pstack. All branding and naming is Viper Stack from here on. Original: https://github.com/cursor/plugins/tree/main/pstack
+Token-efficient engineering playbooks, principles, and verification skills for Cursor and coding agents.
 
-## What this is
+## Table of contents
 
-A reworked, self-contained set of agent skills that keep the rigor (playbooks, principles, verification-first, how/why, sequence into verifiable units, smallest change) while defaulting to **Auto** or **Composer 2.5 Standard** so limited token allowances last longer.
+- [Overview](#overview)
+- [Features](#features)
+- [Getting started](#getting-started)
+- [Usage](#usage)
+- [Skill catalog](#skill-catalog)
+- [Configuration and architecture](#configuration-and-architecture)
+- [Upstream sync and token budget](#upstream-sync-and-token-budget)
+- [Contributing](#contributing)
+- [License](#license)
 
-- Prefer Auto / inherit-parent for subagents
-- Reduced multi-model panels (sequential or single by default)
-- Stronger context-window and laziness guards
-- Medium/small reasoning budget preferred
-- Fresh subagents, summaries only in parent
+## Overview
 
-**How and when to use vstack:** [docs/USAGE.md](docs/USAGE.md). Installing it as a Cursor plugin: [docs/CONSUMING.md](docs/CONSUMING.md).
+**Viper Stack (`vstack`)** is a self-contained pack of 53 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or bloated prompts.
 
-## Works with
+Instead of defaulting to expensive frontier-model committees, `vstack` defaults parent sessions to **Auto** or **Composer 2.5 Standard**, delegates bulk reads to fresh subagents that inherit the parent model, and enforces strict token budgets on every skill file in CI.
 
-| Platform | How |
-|----------|-----|
-| Cursor, Claude Code | First-class plugins / marketplaces |
-| Codex, Antigravity, Muse Code, Windsurf/Cascade, OpenCode | First-class via `.agents/skills/` (+ `AGENTS.md`) |
-| Grok Build | First-class via `.grok/skills/` |
-| Grok Bot / GrokHub | Optional documented consume (AGENTS.md); do not force into GrokHub |
-| Aider, Continue | Documented-generic (`AGENTS.md`); skills deferred until hosts confirm SKILL.md paths |
+## Features
 
-Full matrix and commands: [docs/CONSUMING.md](docs/CONSUMING.md).
+- **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
+- **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
+- **53 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
+- **Multi-agent packaging**: Ships native plugin manifests for Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)) and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)), plus installers for portable `.agents/skills/` and `.grok/skills/` layouts.
+- **CI-enforced token caps**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and blocks unapproved prompt growth on pull requests and branch pushes.
 
-## Install
+## Getting started
 
-### From a clone (project-local, preferred for non-plugin hosts)
+### Supported agents
+
+| Platform | Support | Install path |
+| --- | --- | --- |
+| Cursor | First-class plugin | Local plugin (`~/.cursor/plugins/local/vstack`) or team/public marketplace |
+| Claude Code | First-class plugin | Plugin marketplace or `~/.claude/skills/` |
+| Codex, Antigravity, Muse Code, Windsurf, OpenCode | First-class skills | `.agents/skills/` (project or user home) + `AGENTS.md` |
+| Grok Build | First-class skills | `.grok/skills/` (project or user home) |
+| Grok Bot, GrokHub, Aider, Continue | Documented generic | Consumer `AGENTS.md` pointer (see [`docs/CONSUMING.md`](docs/CONSUMING.md)) |
+
+See [`docs/CONSUMING.md`](docs/CONSUMING.md) for the full compatibility matrix and host-specific instructions.
+
+### Install from the latest release
+
+[`install.sh`](install.sh) downloads the release archive, verifies its SHA-256 checksum against `SHA256SUMS`, and installs into your user directory. Requires `curl`, `tar`, and `sha256sum` (or `shasum`).
 
 ```bash
-./scripts/install_for.sh --host agents --project /path/to/your-app
-./scripts/install_for.sh --host cursor --global    # Cursor plugin symlink
-./scripts/install_for.sh --host claude --global
-./scripts/install_for.sh --host grok --project /path/to/your-app
-```
-
-### One-line installer (from the latest release)
-
-```bash
-# Cursor (local plugin)
+# Cursor local plugin (default)
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash
-# Claude Code (personal skills)
+
+# Claude Code personal skills (~/.claude/skills)
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target claude
-# Portable Agent Skills dir (Codex / Muse / Windsurf / OpenCode / Antigravity compat)
+
+# Portable Agent Skills directory (~/.agents/skills for Codex, Muse, Windsurf, OpenCode, Antigravity)
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target agents
-# Grok Build (personal skills)
+
+# Grok Build personal skills (~/.grok/skills)
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target grok
-# Any agent that reads a skills folder
-curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target dir --dir path/to/skills
+
+# Custom skills directory
+curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target dir --dir /home/user/my-app/skills
 ```
 
-The installer checks the download's SHA-256 against the release. Pin a version with `--version 1.1.0`. Tarball and zip downloads are on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [CHANGELOG.md](CHANGELOG.md) lists what changed.
+Pass `--version 1.2.0` to pin a specific release. Release archives (`.tar.gz`, `.zip`, and `SHA256SUMS`) are published on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [`CHANGELOG.md`](CHANGELOG.md) lists version history.
 
-### Cursor
-vstack is a Cursor plugin (`.cursor-plugin/plugin.json`). Install it once in Cursor and every agent gets it; do not hand-copy skills into project repos. See [docs/CONSUMING.md](docs/CONSUMING.md).
+### Install from a git clone
 
-Pick **`/viper-mode`** from the `/` menu so Cursor attaches the skill, then type your goal. Plain text `/viper-mode` may not bind the skill.
+Use [`scripts/install_for.sh`](scripts/install_for.sh) for project-local symlinks (or pass `--mode copy` to copy files):
 
+```bash
+git clone https://github.com/blackviperxiii-ui/vstack.git /home/user/vstack
+cd /home/user/vstack
+
+./scripts/install_for.sh --host agents --project /home/user/my-app
+./scripts/install_for.sh --host cursor --global
+./scripts/install_for.sh --host claude --global
+./scripts/install_for.sh --host grok --project /home/user/my-app
 ```
-/viper-mode <your goal>
+
+### Marketplace and CLI helpers
+
+In Claude Code:
+
+```text
+/plugin marketplace add blackviperxiii-ui/vstack
+/plugin install vstack@vstack
 ```
 
-Or set it as a custom mode.
+With the `skills` CLI helper (for example in Codex):
 
-### Other agents (Codex helper)
-```
+```bash
 npx skills add blackviperxiii-ui/vstack --skill viper-mode
 ```
 
-## Core skill
+## Usage
 
-- **viper-mode**: The main router. Matches the task to a playbook, builds a todo list, applies principles, delegates efficiently, and demands evidence before claiming done.
+### Quick start in Cursor
 
-## Slash skills
+1. Install `vstack` once as a Cursor plugin and reload Cursor. Do not copy `skills/` manually into `.cursor/skills/`.
+2. Select **`/viper-mode`** from the `/` command menu so Cursor attaches [`skills/viper-mode/SKILL.md`](skills/viper-mode/SKILL.md), then write your task:
 
-- **in-your-own-words**: Before substantial work, restate the user's goals and the problem in your own words (`/in-your-own-words`).
-- **sharpen**: Deepen a task (not enlarge it), then rewrite the prompt (`/sharpen`).
-- **unslop**: Cut AI tells from writing (`/unslop`).
-- **ketchup**: Catch the user up since their last message; list waiting decisions (`/ketchup`).
-- **land-it**: Whole-app product-feel dive; miss-the-mark UX, interactivity, QoL, and code shortfalls; ranked low-effort fixes (`/land-it`).
-- **qa-walkthrough**: App UI walk + code QA; ranked report; safe fixes as small beta PRs (`/qa-walkthrough`).
-- **av-qa-walkthrough**: Audio/video playback, sync, quality, devices, streaming; ffprobe/ffmpeg evidence; ranked report (`/av-qa-walkthrough`).
-- **follow-through**: Task ledger, check-ins, stall detection, proactive status; proven done and handoff (`/follow-through`).
-- **updater**: Find every part of an app that needs updating (deps, advisories, toolchains, CI actions, game addons, mod sources, model ids, APIs); safe bumps as one PR per area, the rest as cards (`/updater`).
-- **create-verification-skill**: Generate a project-local skill that drives the real app and proves behavior (`/create-verification-skill`).
-- **maintain-verification-skill**: Audit a verify skill and feature map; one PR of proven fixes max (`/maintain-verification-skill`).
-- **create-formal-verification-skill**: Generate a project-local formal verification skill (`/create-formal-verification-skill`).
-- **maintain-formal-verification-skill**: Resync formal verification after code drift (`/maintain-formal-verification-skill`).
-- **how** / **why**: How a subsystem works; why it is shaped that way, with cited evidence (`/how`, `/why`).
-- **teach**: Plain explanation built from how + why, at the reader's pace (`/teach`).
-- **recall**: Rebuild recent working context into a current-state brief (`/recall`).
-- **architect**: Sketch types and module boundaries before code, then implement against the sketch (`/architect`).
-- **figure-it-out**: Design an auditable playbook when none fits (`/figure-it-out`).
-- **show-me-your-work**: Append-only TSV decision trail for long or unattended runs (`/show-me-your-work`).
-- **blast-radius**: What a change breaks beyond the diff; prove the one safety fact by running code (`/blast-radius`).
-- **interrogate**: Adversarial review where only run-proven findings survive (`/interrogate`).
-- **tdd**: Failing test first, only when the test path is cheap (`/tdd`).
-- **correct**: Make repeated agent mistakes impossible via architecture, types, lint, tests (`/correct`).
-- **reflect**: Turn this chat's learnings into skill edits, after approval (`/reflect`).
-- **swarm**: Fan out parallel workers for coverage or races; one report (`/swarm`).
-- **benchmark-checklist**: Vet a perf number before reporting it (`/benchmark-checklist`).
-- **technical-writing**: Layered standard for docs, PR bodies, commits (`/technical-writing`).
-- **typescript-best-practices**: Type-safe TS rules, auto-scoped to `.ts`/`.tsx`.
-- **principle-\***: One skill per principle `viper-mode` cites (prove it works, model the domain, boundary discipline, and more).
+```text
+/viper-mode Fix token_check false positive when tokens.json is fresh
+```
 
-## Design skills
+3. Optionally run **`/setup-vstack`** once to write `~/.cursor/rules/vstack-models.mdc` with `auto` model defaults.
 
-- **stageshow**: Faux product UI stills, cursor demos and bento grids in React, with a kit, gold examples and a filming check (`/stageshow`). Vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (MIT). The short `SKILL.md` loads first and sends the agent to the full `GUIDE.md`; `skills/stageshow/VENDORED.md` records the upstream commit and local changes. Previewing or filming needs Node 20.19+ (`npm install` in `skills/stageshow`) and a local Chrome.
+### Consumer repository pointer
 
-## Efficiency defaults (baked in)
+In repositories where agents read `AGENTS.md`, add a short pointer so agents load `vstack` and follow RPE:
 
-- Models: auto / inherit parent (set parent to Auto or Composer 2.5 Standard with Fast off)
-- Budget: medium preferred
-- Panels: single-model sequential unless high-stakes
-- Context: bulk work to subagents, summaries only in main thread
-- Bias: smallest change that meets the criteria; stop early when good enough
+```markdown
+## vstack
 
-## Expand later
+Always load and follow the vstack skills (start with `viper-mode`). Never use pstack.
+If skills live under `.agents/skills/` (or `.claude/skills/` or `.grok/skills/`), read `viper-mode/SKILL.md` first.
+RPE: Research, Plan, then Execute; no edits before a written plan.
+```
 
-Still unported from pstack (see `UPSTREAM.json` `unported`): `arena` (multi-model panels, off by default here), `automate-me`, `make-bot-ui`, `no-comments` (needs a pstack agent), `poteto-help`, `bro`, and small principles deferred under the token cap. Most of those principles already appear as one-liners in `viper-mode`; `exhaust-the-design-space` and `migrate-callers-then-delete-legacy-apis` do not yet.
+See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/land-it`, `/qa-walkthrough`, `/av-qa-walkthrough`, and `/updater`).
 
-## Releasing
+## Skill catalog
 
-1. Bump `VERSION`, the `version` in both `plugin.json` files and both `marketplace.json` files, and add a `CHANGELOG.md` section.
-2. Land it on `beta`, then promote to `main`.
-3. Run **Actions → Release → Run workflow** on `main`. It checks that the versions agree, runs lint and tests, builds `vstack-<version>.tar.gz`, `.zip`, and `SHA256SUMS` with `scripts/package_release.sh`, and publishes the `v<version>` tag and GitHub Release.
+### Core orchestrator
+
+- **`viper-mode`**: Main router. Restates the goal, enforces Research-Plan-Execute, matches the task to a playbook, applies principles, delegates to subagents, and verifies real behavior before completion.
+
+### Workflow and verification skills
+
+- **`setup-vstack`**: Writes an always-applied rule configuring roles to inherit `auto` / Composer Standard (`/setup-vstack`).
+- **`in-your-own-words`**: Restates the user's goal, problem, and smallest change before substantial edits (`/in-your-own-words`).
+- **`sharpen`**: Deepens a task without enlarging scope, then rewrites the prompt (`/sharpen`).
+- **`how`** and **`why`**: Explains how a subsystem works or why it is shaped that way with cited code and git evidence (`/how`, `/why`).
+- **`teach`**: Builds a plain-language explanation from `how` and `why` at the reader's pace (`/teach`).
+- **`recall`**: Reconstructs recent working context into a current-state brief (`/recall`).
+- **`architect`**: Sketches data types and module boundaries before writing implementation code (`/architect`).
+- **`statechart`**: Models system transitions and bug paths as reader-facing Mermaid statecharts (`/statechart`).
+- **`figure-it-out`**: Designs a short, auditable playbook when no standard playbook fits (`/figure-it-out`).
+- **`follow-through`**: Maintains a task ledger with check-ins, stall detection, and proven completion (`/follow-through`).
+- **`show-me-your-work`**: Records an append-only TSV decision trail during long or unattended runs (`/show-me-your-work`).
+- **`tdd`**: Starts with a failing test when the test harness is fast and cheap (`/tdd`).
+- **`blast-radius`**: Traces what a change can break beyond the diff and proves safety by running code (`/blast-radius`).
+- **`interrogate`**: Runs an adversarial review where only run-proven findings survive (`/interrogate`).
+- **`land-it`**: Audits whole-app product feel, interactivity, UX gaps, and code shortfalls, then ranks low-effort fixes (`/land-it`).
+- **`qa-walkthrough`**: Runs an end-to-end UI and code QA pass and produces a severity-ranked report (`/qa-walkthrough`).
+- **`av-qa-walkthrough`**: Audits audio/video playback, sync, devices, and streams using `ffprobe` and `ffmpeg` evidence (`/av-qa-walkthrough`).
+- **`updater`**: Audits Cargo, npm, PyPI, RustSec, toolchains, GitHub Actions, WoW `.toc` versions, Minecraft releases, and model IDs via `skills/updater/scripts/updater.py` (`/updater`).
+- **`create-verification-skill`** and **`maintain-verification-skill`**: Generates and audits project-local runtime verification skills (`/create-verification-skill`, `/maintain-verification-skill`).
+- **`create-formal-verification-skill`** and **`maintain-formal-verification-skill`**: Generates and resyncs project-local formal verification skills (`/create-formal-verification-skill`, `/maintain-formal-verification-skill`).
+- **`benchmark-checklist`**: Vets performance numbers before reporting them (`/benchmark-checklist`).
+- **`correct`**: Prevents repeated agent mistakes through architecture, types, lint rules, or tests (`/correct`).
+- **`reflect`**: Turns session learnings into reviewed skill edits (`/reflect`).
+- **`swarm`**: Fans out parallel subagents for broad coverage or competing implementations and merges into one report (`/swarm`).
+- **`ketchup`** and **`ketchup-video`**: Summarizes progress since the user's last message as text or a short subtitled slide video, listing pending decisions (`/ketchup`, `/ketchup-video`).
+- **`technical-writing`** and **`unslop`**: Enforces clear developer prose and strips AI writing tells (`/technical-writing`, `/unslop`).
+- **`typescript-best-practices`**: Applies type-safe TypeScript rules on `.ts` and `.tsx` files.
+
+### Design skills
+
+- **`stageshow`**: Builds faux product UI stills, cursor demos, and bento grids in React with automated filming checks (`/stageshow`). Vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (MIT; see [`skills/stageshow/VENDORED.md`](skills/stageshow/VENDORED.md)). Previewing or filming requires Node.js 20.19+ (`npm install` inside `skills/stageshow`) and local Chrome.
+
+### Principle skills
+
+19 standalone `principle-*` skills back the rules cited by `viper-mode`, including `principle-prove-it-works`, `principle-fix-root-causes`, `principle-model-the-domain`, `principle-boundary-discipline`, `principle-type-system-discipline`, `principle-sequence-verifiable-units`, `principle-subtract-before-you-add`, and `principle-test-behavior-not-implementation`.
+
+## Configuration and architecture
+
+### Efficiency defaults
+
+- **Models**: `auto` / inherit parent (configure parent to Auto or Composer 2.5 Standard with Fast off).
+- **Reasoning budget**: Medium or small preferred, matched to task difficulty.
+- **Panels**: Single-model sequential passes by default; multi-model only on explicit high-stakes requests.
+- **Context discipline**: Bulk exploration runs in fresh subagents; only concise summaries return to the main thread.
+- **Change bias**: Smallest root-cause change that meets the acceptance criteria.
+
+### Repository layout
+
+```text
+.
+├── .claude-plugin/       # Claude Code plugin and marketplace manifests
+├── .cursor-plugin/       # Cursor plugin and marketplace manifests
+├── docs/                 # Usage guide, consumer install matrix, and CI policy
+├── rules/                # Always-applied Cursor rule distributed with the plugin
+├── scripts/              # Skill linter, token counter/checker, secret & PII guards, installers
+├── skills/               # 53 skill directories (each containing SKILL.md)
+├── tests/                # Python stdlib unittest suite for repo scripts
+├── install.sh            # Checksum-verified release installer
+├── requirements-ci.txt   # CI dependency for token counting (tiktoken==0.14.0)
+├── tokens.json           # Tracked cl100k_base token and byte counts per skill
+├── UPSTREAM.json         # Upstream pstack sync state, skill mapping, and unported list
+└── VERSION               # Current release version
+```
+
+### Documentation
+
+- [`docs/USAGE.md`](docs/USAGE.md): When and how to use `vstack`, concrete examples, and skill overview.
+- [`docs/CONSUMING.md`](docs/CONSUMING.md): Multi-agent installation guide and consumer `AGENTS.md` configuration.
+- [`docs/ci-policy.md`](docs/ci-policy.md): Workflow triggers, path gating, and CI rules.
+- [`AGENTS.md`](AGENTS.md): Repository rules, branch workflow, and verification requirements.
+- [`CHANGELOG.md`](CHANGELOG.md): Release notes across versions.
 
 ## Upstream sync and token budget
 
-This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tree/main/pstack) in `UPSTREAM.json` (`last_synced_sha`, `mapping`, `unported`). A daily **Upstream watch** workflow checks out **`beta`**, compares against that branch’s `last_synced_sha`, and opens or updates a single `upstream-sync` issue when real upstream tip drift exists (it closes the issue when `beta` is already current); it never edits skills for you. **Dependabot** watches `requirements-ci.txt` and GitHub Actions weekly.
+This repository tracks [`cursor/plugins` (`pstack`)](https://github.com/cursor/plugins/tree/main/pstack) in [`UPSTREAM.json`](UPSTREAM.json) (`last_synced_sha`, `mapping`, `unported`). A daily **Upstream watch** workflow compares `beta` against `last_synced_sha` and opens or updates a single `upstream-sync` issue when upstream drifts (closing it once `beta` catches up). Dependabot checks `requirements-ci.txt` and GitHub Actions weekly.
 
-**Sync PRs** bump `last_synced_sha` after you port changes. **Token check** on every PR to `main` and `beta` (see `.github/workflows/ci.yml`):
+[`scripts/token_check.py`](scripts/token_check.py) enforces token limits on pull requests and pushes to `main` and `beta` (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
 
-- Regenerate `tokens.json` with `python scripts/count_tokens.py` (tiktoken `cl100k_base`) and commit it; CI fails if the file is stale.
-- Existing skills must not grow versus `main`, unless:
-  - this is a sync PR and each grown skill’s growth ratio is ≤ its mapped upstream file’s growth between the old and new SHAs, plus 5%; or
-  - the PR has the `token-growth-approved` label.
-- New **mapped** (upstream-ported) skills are allowed only on sync PRs and must stay ≤ 35% of the mapped upstream skill’s token count at the new SHA.
-- New **original** (vstack-native, no `UPSTREAM.json` mapping) skills are allowed on any PR if they stay ≤ **400** tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
+- Regenerate [`tokens.json`](tokens.json) with `python3 scripts/count_tokens.py` (`tiktoken` `cl100k_base`) and commit it whenever a `SKILL.md` changes. CI fails if `tokens.json` is stale.
+- Existing skills cannot grow relative to the base commit unless:
+  - the PR updates `last_synced_sha` (a sync PR) and each skill's growth ratio stays within its mapped upstream skill's growth ratio plus `5%`, or
+  - the PR carries the `token-growth-approved` label.
+- New **mapped** skills (listed in `UPSTREAM.json` `mapping`) are allowed only on sync PRs and must be `<= 35%` of the upstream skill's token count at the new SHA.
+- New **original** skills (not in `UPSTREAM.json` `mapping`) are allowed on any PR if they stay `<= 400` tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Pushes to `main` and `beta` run the same limits against the commit before the push, reading the `token-growth-approved` label from the merged PR. Nightly and manual runs have no base, so they check only that `tokens.json` is fresh.
+Currently [`UPSTREAM.json`](UPSTREAM.json) maps 47 ported skills, while 6 skills are `vstack`-original (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`). Upstream skills intentionally omitted under the token budget (`arena`, `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`. Other upstream skills stay listed under `unported` until you add them.
+## Contributing
 
----
+### Branch workflow
 
-Viper Stack. Rigorous. Efficient. Yours.
+- **`beta`** is the active integration branch. Open all day-to-day pull requests against `beta`.
+- **`main`** is the stable release branch. Do not target `main` directly unless promoting `beta` for a release.
+- Follow Research-Plan-Execute (RPE), keep prose docs in `docs/` rather than growing `SKILL.md` files, and keep all content free of personal information (see [`AGENTS.md`](AGENTS.md)).
 
-## Credits
+### Local verification
 
-vstack is adapted from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT). See [LICENSE](LICENSE).
+Python 3.12+ is used in CI. Run the test and lint suite locally before pushing:
+
+```bash
+python3 scripts/lint_skills.py
+python3 scripts/check_secrets.py
+python3 scripts/pii-guard/pii_guard.py
+python3 -m unittest discover -s tests -p 'test_*.py' -q
+pip install -r requirements-ci.txt
+python3 scripts/token_check.py
+```
+
+### Releasing
+
+1. Update [`VERSION`](VERSION), the `version` field in both `plugin.json` files and both `marketplace.json` files, and add a release section in [`CHANGELOG.md`](CHANGELOG.md).
+2. Merge to `beta`, then promote `beta` to `main`.
+3. Run **Actions > Release > Run workflow** on `main` (or push a matching `v<version>` tag). The workflow validates versions, runs lint and unit tests, builds `vstack-<version>.tar.gz`, `vstack-<version>.zip`, and `SHA256SUMS` via [`scripts/package_release.sh`](scripts/package_release.sh), and publishes the GitHub Release.
+
+## License
+
+Licensed under the `MIT` License. See [`LICENSE`](LICENSE) for full text.
+
+`vstack` is adapted from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (`MIT`), and `skills/stageshow` is vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (`MIT`).
