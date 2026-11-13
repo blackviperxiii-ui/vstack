@@ -9,7 +9,7 @@ Agent accountability for assigned work—not verify skills or ship gates (**crea
 
 ## 1. Ledger
 
-One entry per task: id/title, owner, status (todo, doing, blocked, done), started, last progress, next check. Host todo/board if present; else `follow-through-ledger.md` at repo root or `.cursor/` (name path once). One **doing** task per agent.
+One entry per task: id/title, owner, status (todo, doing, blocked, done), started, last progress, next check. Host todo/board if present; else `follow-through-ledger.md` at repo root or `.cursor/` (name path once). One **doing** task per agent. Project preference for one card/thread: honor it; do not launch a second worker on shared files (CHANGELOG, README, tokens) while another PR is open—queue or wait.
 
 ## 2. Check-ins
 

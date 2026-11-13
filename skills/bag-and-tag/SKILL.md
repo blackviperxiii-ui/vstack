@@ -15,7 +15,7 @@ Cite **principle-prove-it-works**, **principle-make-operations-idempotent**, **A
 
 1. **Preflight:** user explicitly asked to promote; beta tip green; Unreleased has content or bump is intentional.
 2. **Reconcile:** compare `beta` vs `main` trees; never force-push either branch.
-3. **Bump on beta:** `VERSION`, both `plugin.json`, marketplace files; move CHANGELOG Unreleased → `## X.Y.Z`; PR → beta; squash-merge on green.
+3. **Bump on beta:** `VERSION`, root `plugin.json`, `.cursor-plugin/plugin.json`, `.claude-plugin/plugin.json`, marketplace files; move CHANGELOG Unreleased → `## X.Y.Z`; PR → beta; squash-merge on green.
 4. **Promote:** PR beta → main (squash-merge on green; same pattern as prior promote PRs).
 5. **Bag & tag:** annotated `vX.Y.Z` on main tip matching VERSION (or `workflow_dispatch` Release on main).
 6. **Artifacts:** confirm GitHub Release has tarball/zip/SHA256SUMS (`.github/workflows/release.yml`).
