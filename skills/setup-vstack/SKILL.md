@@ -1,32 +1,18 @@
 ---
 name: setup-vstack
-description: Configure Viper Stack for token efficiency. Writes an always-applied Auto / Composer Standard rule.
+description: Install and configure Viper Stack for the current coding agent (Cursor, Claude Code, Codex, Antigravity, Muse, Windsurf, OpenCode, Grok Build).
 ---
 
 # Setup Vstack
 
-Write `~/.cursor/rules/vstack-models.mdc` (or project `.cursor/rules/`) so every role uses `auto` (inherit parent).
+Install skills and always-on config for **this** host. Never write another host's paths.
 
-## Steps
+**Read `GUIDE.md` in this folder** for detect → install → pointer → verify. Host matrix: `docs/CONSUMING.md`.
 
-1. Detect models (Task slugs). `auto` / `inherit-parent` always valid.
-2. Budget: medium (high effort) or small (medium).
-3. Write:
+Short form:
 
-```
----
-description: Viper Stack models — Auto / Composer Standard
-alwaysApply: true
----
-# budget: medium (high)
-feature, refactoring, bug-fix, perf-issue, hillclimb: auto
-judgment and prose: auto
-hardest tasks: auto
-how, why, arena, swarm, architect, interrogate: auto
-```
-
-4. Tell user: parent Auto or Composer 2.5 Fast OFF, then fresh session.
-5. Optional once: offer `/create-verification-skill` if no project verify harness.
-6. Optional once: offer `/create-formal-verification-skill` if no formal verify skill.
-
-Keeps rigor while protecting token allowance.
+1. Detect host (explicit user target wins).
+2. Install: prefer marketplace/plugin; else `install.sh` / `install_for.sh` for that host.
+3. In a project: ensure consumer `AGENTS.md` / `CLAUDE.md` pointer (CONSUMING snippet).
+4. Cursor-only: write `~/.cursor/rules/vstack-models.mdc` if missing (model budget). Never write `~/.cursor/**` on other hosts.
+5. Verify `viper-mode/SKILL.md` on the chosen path; reload / new session; start with `/viper-mode`.

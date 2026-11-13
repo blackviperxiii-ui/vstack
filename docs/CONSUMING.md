@@ -1,6 +1,6 @@
 # Installing vstack for coding agents
 
-vstack is a skill pack (`skills/`, always-apply rules, `AGENTS.md` / `CLAUDE.md`). Prefer a **plugin or marketplace** when the host has one. Otherwise install skills into the host’s **documented** skill directory (portable default: `.agents/skills/`). **Do not hand-copy playbooks into other repos** and do not invent plugin manifests.
+vstack is a skill pack (`skills/`, always-apply rules, `AGENTS.md` / `CLAUDE.md`). Prefer a **plugin or marketplace** when the host has one. Otherwise install skills into the host’s **documented** skill directory (portable default: `.agents/skills/`). **Do not hand-copy playbooks into other repos** and do not invent plugin manifests. Agents can also run **`/setup-vstack`**, which detects the host and follows this matrix (Cursor-only model rule; never another host’s paths).
 
 From a clone of this repo, project-local install (idempotent links by default):
 
