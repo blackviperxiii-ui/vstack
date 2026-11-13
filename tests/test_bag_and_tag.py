@@ -32,6 +32,7 @@ class BagAndTagSkillTest(unittest.TestCase):
             "explicit",
             "force-push",
             "plugin.json",
+            "Agent Plugins",
             "vX.Y.Z",
             "release.yml",
             "install.sh",

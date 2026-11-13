@@ -2,7 +2,7 @@ name: Release
 
 # Publishes vstack-<VERSION> as a GitHub Release with tarball, zip, and
 # SHA256SUMS. Run it from main (Actions, Release, Run workflow), or push a
-# v<VERSION> tag. VERSION, both plugin.json files, and the tag must agree.
+# v<VERSION> tag. VERSION, root + Cursor/Claude plugin.json files, and the tag must agree.
 on:
   workflow_dispatch:
   push:

@@ -22,7 +22,7 @@ Do **not** treat this skill as a generic “ship” or “deploy” playbook for
 Bump these to the same `X.Y.Z`:
 
 - `VERSION`
-- `.cursor-plugin/plugin.json` and `.claude-plugin/plugin.json`
+- root `plugin.json` (Agent Plugins), `.cursor-plugin/plugin.json`, and `.claude-plugin/plugin.json`
 - marketplace manifests that embed the version (if present)
 
 Move `## Unreleased` notes into `## X.Y.Z` (keep an empty Unreleased stub). One CHANGELOG line per change historically; do not invent prose.

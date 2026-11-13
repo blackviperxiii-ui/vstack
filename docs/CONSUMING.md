@@ -54,9 +54,22 @@ Or from a tagged release: `curl -fsSL https://raw.githubusercontent.com/blackvip
 
 ### Cloud Agents and Projects
 
-Import this repo as a team marketplace: Cursor Dashboard → Plugins & MCPs → Team Marketplaces → Add Marketplace → Import from Repo → `https://github.com/blackviperxiii-ui/vstack`. Set vstack to Required and turn on Auto Refresh.
+Cloud Agents / Projects install team plugins at **agent start**. A personal local plugin (`~/.cursor/plugins/local`) or Sync Skills does **not** reach them. Do not confuse this with MCP server setup.
 
-Or submit to the public Cursor Marketplace at https://cursor.com/marketplace/publish; then install from Customize or `/add-plugin vstack`.
+**Preferred (works for Projects): Import from Repo**
+
+1. Cursor Dashboard → **Plugins & MCPs** → Team Marketplaces → **Add Marketplace** → **Import from Repo** → `https://github.com/blackviperxiii-ui/vstack` (not “Add plugin by URL” alone, and not MCP).
+2. Set **vstack** to **Required**.
+3. Turn on **Auto Refresh** (needs the Cursor GitHub App on this repo). After a release, click **Refresh** once if Auto Refresh lags.
+4. Start a **new** Project / Cloud Agent (running agents keep the plugin versions they started with).
+
+This repo ships both a Cursor Plugin (`.cursor-plugin/plugin.json`) and a root Agent Plugins `plugin.json` so Cursor-hosted packaging and GitHub import can resolve skills.
+
+**Cursor-hosted / marketplace-listed path**
+
+If you add vstack via the Default marketplace “Add to Marketplace → Plugin” URL flow, or later from the public Cursor Marketplace (`https://cursor.com/marketplace/publish` / Customize / `/add-plugin vstack`), still set it **Required**, Refresh, then start a **new** agent. Prefer **Import from Repo** when Projects must see skills reliably.
+
+**Personal-only fallback:** Sync Skills / local plugin / `install_for.sh --host cursor` — fine for one machine; not a Projects fix.
 
 ## Claude Code
 
