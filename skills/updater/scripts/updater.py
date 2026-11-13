@@ -455,13 +455,21 @@ def sparse_index_path(name: str) -> str:
 
 
 def latest_crate(f: Fetcher, name: str) -> str | None:
-    body = f.text(f"https://index.crates.io/{sparse_index_path(name)}")
+    url = f"https://index.crates.io/{sparse_index_path(name)}"
+    body = f.text(url)
+    if body is not None and not body.strip():
+        f.unusable(url)
+        return None
     best = None
     for line in (body or "").splitlines():
         try:
             entry = json.loads(line)
         except json.JSONDecodeError:
-            continue
+            entry = None
+        if not isinstance(entry, dict):
+            # A cut-off index would otherwise give an older "latest".
+            f.unusable(url)
+            return None
         v = parse_version(entry.get("vers", ""))
         if v and not entry.get("yanked") and (best is None or v > best[0]):
             best = (v, entry["vers"])
@@ -639,13 +647,24 @@ def check_npm_audit(repo: Path, surfaces: list[Surface]) -> list[Finding]:
 
 
 def latest_npm(f: Fetcher, name: str) -> str | None:
-    data = f.json(f"https://registry.npmjs.org/{urllib.parse.quote(name, safe='@')}/latest")
-    return data.get("version") if isinstance(data, dict) else None
+    url = f"https://registry.npmjs.org/{urllib.parse.quote(name, safe='@')}/latest"
+    data = f.json(url)
+    version = data.get("version") if isinstance(data, dict) else None
+    if data is not None and not isinstance(version, str):
+        f.unusable(url)
+        return None
+    return version
 
 
 def latest_pypi(f: Fetcher, name: str) -> str | None:
-    data = f.json(f"https://pypi.org/pypi/{name}/json")
-    return (data or {}).get("info", {}).get("version")
+    url = f"https://pypi.org/pypi/{name}/json"
+    data = f.json(url)
+    info = data.get("info") if isinstance(data, dict) else None
+    version = info.get("version") if isinstance(info, dict) else None
+    if data is not None and not isinstance(version, str):
+        f.unusable(url)
+        return None
+    return version
 
 
 def check_actions(f: Fetcher, repo: Path, surfaces: list[Surface]) -> list[Finding]:
@@ -689,9 +708,12 @@ def check_toolchains(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
     out = []
     rust = [s for s in surfaces if s.kind in ("rust-toolchain", "rust-msrv")]
     if rust:
-        body = f.text("https://static.rust-lang.org/dist/channel-rust-stable.toml")
+        url = "https://static.rust-lang.org/dist/channel-rust-stable.toml"
+        body = f.text(url)
         m = re.search(r'\[pkg\.rust\]\s*\nversion\s*=\s*"(\d+\.\d+\.\d+)', body or "")
         stable = m.group(1) if m else None
+        if body is not None and not stable:
+            f.unusable(url)
         for s in rust:
             cur = parse_version(s.current.split(" | ")[0]) if s.current else None
             if not stable or not cur:
@@ -704,8 +726,12 @@ def check_toolchains(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
                                    "floor is far behind stable", s.files[:3]))
     node = [s for s in surfaces if s.kind in ("node-engine", "node-pin")]
     if node:
-        index = f.json("https://nodejs.org/dist/index.json") or []
-        lts = next((r for r in index if r.get("lts")), None)
+        url = "https://nodejs.org/dist/index.json"
+        index = f.json(url)
+        rows = [r for r in index if isinstance(r, dict)] if isinstance(index, list) else []
+        lts = next((r for r in rows if r.get("lts") and parse_version(str(r.get("version", "")))), None)
+        if index is not None and not lts:
+            f.unusable(url)
         for s in node:
             cur = req_base(s.current)
             if not lts or not cur:
@@ -758,9 +784,13 @@ def check_minecraft(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
     mc = [s for s in surfaces if s.kind.startswith("minecraft") or (s.kind == "launcher" and s.name == "Minecraft")]
     if not mc:
         return []
-    data = f.json("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json") or {}
-    release = (data.get("latest") or {}).get("release")
-    if not release:
+    url = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"
+    data = f.json(url)
+    latest = data.get("latest") if isinstance(data, dict) else None
+    release = latest.get("release") if isinstance(latest, dict) else None
+    if not isinstance(release, str) or not release:
+        if data is not None:
+            f.unusable(url)
         return []
     out = []
     for s in mc:
