@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "vstack",
+  "version": "1.2.2",
+  "description": "Viper's skill stack: viper-mode, how, why, architect, blast-radius, interrogate, follow-through, qa-walkthrough, principle and formal verification skills for Cursor agents.",
+  "author": {
+    "name": "blackviperxiii-ui",
+    "url": "https://github.com/blackviperxiii-ui/vstack"
+  },
+  "homepage": "https://github.com/blackviperxiii-ui/vstack",
+  "repository": "https://github.com/blackviperxiii-ui/vstack",
+  "license": "MIT",
+  "keywords": [
+    "vstack",
+    "viper-mode",
+    "workflow",
+    "qa",
+    "skills"
+  ]
+}

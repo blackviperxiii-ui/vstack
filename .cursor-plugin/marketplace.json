@@ -1,12 +1,17 @@
 {
   "name": "vstack",
-  "owner": { "name": "blackviperxiii-ui" },
-  "metadata": { "description": "user's vstack skill stack for Cursor." },
+  "owner": {
+    "name": "blackviperxiii-ui"
+  },
+  "metadata": {
+    "description": "Viper's skill stack for Cursor agents (viper-mode and supporting skills).",
+    "version": "1.2.2"
+  },
   "plugins": [
     {
       "name": "vstack",
       "source": "./",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "description": "Viper's skill stack for Cursor agents."
     }
   ]

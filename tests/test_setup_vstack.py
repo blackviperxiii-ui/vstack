@@ -37,6 +37,8 @@ class SetupVstackSkillTest(unittest.TestCase):
             "install.sh",
             "vstack-models.mdc",
             "Do not write `~/.cursor/**` unless host is `cursor`",
+            "Import from Repo",
+            "Cloud Agents",
         ):
             self.assertIn(needle, text, f"GUIDE missing {needle!r}")
 

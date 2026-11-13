@@ -148,7 +148,7 @@ if [ -n "$plugin_dest" ]; then
 		mkdir -p "$plugin_dest"
 		# Mirror the release layout used by install.sh / package_release.sh.
 		for path in skills rules assets docs .claude-plugin .cursor-plugin \
-			README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md; do
+			plugin.json README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md; do
 			[ -e "$root/$path" ] || continue
 			cp -R "$root/$path" "$plugin_dest/$path"
 		done

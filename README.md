@@ -29,7 +29,7 @@ Instead of defaulting to expensive frontier-model committees, `vstack` defaults 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
 - **55 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
-- **Multi-agent packaging**: Ships native plugin manifests for Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)) and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)), plus installers for portable `.agents/skills/` and `.grok/skills/` layouts.
+- **Multi-agent packaging**: Ships Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)), root Agent Plugins ([`plugin.json`](plugin.json)), and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)) manifests, plus installers for portable `.agents/skills/` and `.grok/skills/` layouts. Cursor Projects: see [`docs/CONSUMING.md`](docs/CONSUMING.md).
 - **CI-enforced token caps**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and blocks unapproved prompt growth on pull requests and branch pushes.
 
 ## Getting started
@@ -67,7 +67,7 @@ curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/insta
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target dir --dir /home/user/my-app/skills
 ```
 
-Pass `--version 1.2.1` to pin a specific release. Release archives (`.tar.gz`, `.zip`, and `SHA256SUMS`) are published on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [`CHANGELOG.md`](CHANGELOG.md) lists version history.
+Pass `--version 1.2.2` to pin a specific release. Release archives (`.tar.gz`, `.zip`, and `SHA256SUMS`) are published on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [`CHANGELOG.md`](CHANGELOG.md) lists version history.
 
 ### Install from a git clone
 
@@ -185,6 +185,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 
 ```text
 .
+├── plugin.json           # Agent Plugins root manifest (Cursor-hosted / portable)
 ├── .claude-plugin/       # Claude Code plugin and marketplace manifests
 ├── .cursor-plugin/       # Cursor plugin and marketplace manifests
 ├── docs/                 # Usage guide, consumer install matrix, and CI policy
@@ -245,7 +246,7 @@ python3 scripts/token_check.py
 
 ### Releasing
 
-1. Update [`VERSION`](VERSION), the `version` field in both `plugin.json` files and both `marketplace.json` files, and add a release section in [`CHANGELOG.md`](CHANGELOG.md).
+1. Update [`VERSION`](VERSION), the `version` field in root + Cursor/Claude `plugin.json` files and both `marketplace.json` files, and add a release section in [`CHANGELOG.md`](CHANGELOG.md).
 2. Merge to `beta`, then promote `beta` to `main`.
 3. Run **Actions > Release > Run workflow** on `main` (or push a matching `v<version>` tag). The workflow validates versions, runs lint and unit tests, builds `vstack-<version>.tar.gz`, `vstack-<version>.zip`, and `SHA256SUMS` via [`scripts/package_release.sh`](scripts/package_release.sh), and publishes the GitHub Release.
 

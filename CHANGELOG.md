@@ -4,6 +4,12 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.2.2
+
+### Fixed
+
+- Cursor Projects / Cloud Agents packaging: add root Agent Plugins `plugin.json` alongside `.cursor-plugin/` so Cursor-hosted marketplace installs can resolve skills the same way GitHub Import from Repo already does; expand `docs/CONSUMING.md` Projects checklist (Import from Repo, Required, Auto Refresh, new agent; Sync Skills is personal-only).
+
 ## 1.2.1
 
 ### Added

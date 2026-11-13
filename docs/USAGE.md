@@ -8,7 +8,7 @@ For agents working *in this repo*, also read [AGENTS.md](../AGENTS.md). For inst
 
 ## First 5 minutes
 
-1. **Install** — Cursor / Claude Code: plugin or marketplace ([CONSUMING.md](CONSUMING.md)). Other hosts: `./scripts/install_for.sh --host agents --project /path/to/app` or `npx skills add blackviperxiii-ui/vstack`.
+1. **Install** — Cursor / Claude Code: plugin or marketplace ([CONSUMING.md](CONSUMING.md); Cursor Projects: Import from Repo checklist there). Other hosts: `./scripts/install_for.sh --host agents --project /path/to/app` or `npx skills add blackviperxiii-ui/vstack`.
 2. **Bind the skill** — In Cursor, pick **`/viper-mode`** from the `/` menu (plain text may not attach it), then state a goal.
 3. **Try one example** — e.g. `/viper-mode Fix token_check false positive when tokens.json is fresh`. Expect playbook + root-cause fix + verify before a PR to **`beta`**.
 
