@@ -416,7 +416,7 @@ class Fetcher:
                 self.misses[url] = f"HTTP {exc.code}"
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             if not secret:
-                self.misses[url] = type(exc).__name__
+                self.misses[url] = miss_reason(exc)
         return None
 
     def json(self, url: str, headers: dict | None = None, secret: bool = False):
@@ -433,6 +433,14 @@ class Fetcher:
     def unusable(self, url: str) -> None:
         """A body came back but held nothing usable: keep the source unchecked."""
         self.misses[url] = "saved body unparseable, truncated?" if self.saved(url).is_file() else "response unparseable"
+
+
+def miss_reason(exc: BaseException) -> str:
+    """A proxy that refuses CONNECT surfaces as URLError("Tunnel connection failed: 403 ...")."""
+    reason = str(getattr(exc, "reason", exc))
+    if "Tunnel connection failed" in reason or ("403" in reason and "proxy" in reason.lower()):
+        return "proxy blocked (403)" if "403" in reason else "proxy blocked"
+    return type(exc).__name__
 
 
 def run_cmd(args: list[str], cwd: Path, timeout: int = 300) -> tuple[int, str]:
@@ -529,7 +537,35 @@ def check_rust_advisories(f: Fetcher, repo: Path, cache: Path, surfaces: list[Su
                 f.misses["https://github.com/rustsec/advisory-db"] = "git clone failed"
                 continue
         out += match_rustsec(db, lock_path, lock)
-    return dedupe(out)
+    return mark_deny_ignores(dedupe(out), deny_ignores(repo))
+
+
+def deny_ignores(repo: Path) -> dict[str, str]:
+    """Advisory id -> reason from every deny.toml [advisories].ignore list."""
+    out: dict[str, str] = {}
+    for path in walk(repo):
+        if path.name != "deny.toml":
+            continue
+        try:
+            doc = tomllib.loads(path.read_text(encoding="utf-8"))
+        except (tomllib.TOMLDecodeError, OSError):
+            continue
+        for item in (doc.get("advisories") or {}).get("ignore") or []:
+            if isinstance(item, str):
+                out.setdefault(item, "no reason given")
+            elif isinstance(item, dict) and item.get("id"):
+                out[item["id"]] = str(item.get("reason") or "no reason given").strip()
+    return out
+
+
+def mark_deny_ignores(findings: list[Finding], ignores: dict[str, str]) -> list[Finding]:
+    """An advisory the repo already ignores is a watch item that carries its recorded reason."""
+    for x in findings:
+        adv = x.data.get("advisory")
+        if adv in ignores:
+            x.severity, x.action = "info", "watch"
+            x.data["ignored"] = ignores[adv]
+    return findings
 
 
 def dedupe(findings: list[Finding]) -> list[Finding]:
@@ -931,7 +967,7 @@ def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, s
     compat = [x for x in watch if x.action == "auto"]
     if compat:
         lines += ["", f"Lockfile-only: {len(compat)} deps have newer compatible releases (a refresh picks them up)."]
-    other = [x for x in watch if x.action != "auto"]
+    other = [x for x in watch if x.action != "auto" and not x.data.get("ignored")]
     if other:
         lines += ["", "Watch list (no action now):"]
         groups: dict[str, list[Finding]] = {}
@@ -941,6 +977,10 @@ def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, s
             shown = "; ".join(f"{x.surface}{' ' + _cut(x.latest, 40) if x.latest else ''}" for x in xs[:6])
             more = f" (+{len(xs) - 6})" if len(xs) > 6 else ""
             lines.append(f"- {area}: {shown}{more}")
+    ignored = [x for x in ranked if x.data.get("ignored")]
+    if ignored:
+        lines += ["", "Ignored advisories (deny.toml; name each in the report with its reason):"]
+        lines += [f"- {x.data['advisory']} {x.surface} {x.current}: {_cut(x.data['ignored'], 120)}" for x in ignored]
     if misses:
         lines += ["", "Unchecked sources (fetch elsewhere, save under fetched/<file>, rerun):"]
         for url, why in sorted(misses.items()):
@@ -964,6 +1004,38 @@ def bump_area(x: Finding) -> str:
 
 # ---------------------------------------------------------------- bump
 
+def lock_packages(lock: Path) -> set[tuple[str, str]]:
+    try:
+        doc = tomllib.loads(lock.read_text(encoding="utf-8"))
+    except (tomllib.TOMLDecodeError, OSError):
+        return set()
+    return {(p.get("name", ""), p.get("version", "")) for p in doc.get("package", [])}
+
+
+def _major(version: str) -> str:
+    v = parse_version(version) or (0, 0, 0)
+    return f"{v[0]}" if v[0] else f"0.{v[1]}"
+
+
+def lock_review(before: set[tuple[str, str]], after: set[tuple[str, str]]) -> list[str]:
+    """New crates and new duplicate majors a lock refresh pulled in."""
+    old_names = {n for n, _ in before}
+    out = [f"new crate {n} {v}" for n, v in sorted(after - before) if n not in old_names]
+
+    def majors(pkgs):
+        m: dict[str, set[str]] = {}
+        for n, v in pkgs:
+            m.setdefault(n, set()).add(_major(v))
+        return m
+    was = majors(before)
+    for name, ms in sorted(majors(after).items()):
+        if len(ms) > 1 and ms != was.get(name, set()) and len(ms) > len(was.get(name, set())):
+            vers = ", ".join(sorted(v for n, v in after if n == name))
+            out.append(f"duplicate majors {name} ({vers}); hold the crate that pulls the new one in"
+                       f" (cargo update -p <crate>@<new> --precise <old>) and card it")
+    return out
+
+
 def bump(repo: Path, out: Path, area: str) -> list[str]:
     findings = [Finding(**d) for d in json.loads((out / "findings.json").read_text(encoding="utf-8"))]
     todo = [x for x in findings if x.action == "auto" and bump_area(x) == area]
@@ -971,9 +1043,12 @@ def bump(repo: Path, out: Path, area: str) -> list[str]:
     if area == "cargo":
         for lock in sorted({fl for x in todo for fl in x.files if fl.endswith("Cargo.lock")} or {"Cargo.lock"}):
             cwd = (repo / lock).parent
+            before = lock_packages(repo / lock)
             code, _ = run_cmd(["cargo", "update"], cwd, 900)
             if code == 0:
                 changed.append(lock)
+                for line in lock_review(before, lock_packages(repo / lock)):
+                    print(f"review {lock}: {line}")
     elif area == "npm":
         for x in todo:
             if x.area != "deps":
