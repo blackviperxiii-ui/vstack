@@ -7,6 +7,7 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 ### Changed
 
 - Encode reflect 2026-11-13 Accepted lessons: echo unique names (iyow / never-block); prove contrasted install channels; dual-ship + Projects verify (setup-vstack GUIDE); one-card / serialize shared ship files (follow-through / separate); Cursor skills-missing checklist + bag-and-tag three-manifest bump and ship-time skill-dir proof.
+- AV ship check lessons: `av-qa-walkthrough` covers apps with no player (reply playback, barge-in echo test, codec boundaries, devices), prefers platform resampling over hand-written DSP, makes each scan line name the command run, keeps the real-media walk as a committed script, and puts decisions only on the decision card; `follow-through` reads the merge commit and checks when someone else merged your PR.
 
 ## 1.2.2
 
