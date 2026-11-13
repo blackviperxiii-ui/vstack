@@ -1,7 +1,7 @@
 {
   "name": "vstack",
   "displayName": "vstack",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Viper's skill stack: viper-mode, how, why, architect, blast-radius, interrogate, follow-through, qa-walkthrough, principle and formal verification skills for Cursor agents.",
   "author": {
     "name": "blackviperxiii-ui"
