@@ -248,6 +248,50 @@ class RustsecTest(RepoTestCase):
         lock.write_text(lock.read_text().replace("0.3.1", "0.3.5"))
         self.assertEqual(updater.match_rustsec(db, lock, "Cargo.lock"), [])
 
+    def test_an_advisory_ignored_in_deny_toml_is_a_watch_item_with_its_reason(self) -> None:
+        lock = self.write("Cargo.lock", 'version = 4\n\n[[package]]\nname = "demo"\nversion = "0.3.1"\n'
+                          'source = "registry+https://github.com/rust-lang/crates.io-index"\n')
+        self.write("deny.toml", '[advisories]\nignore = [\n  { id = "RUSTSEC-0000-0001", reason = "only the old '
+                   'cabin uses demo" },\n  "RUSTSEC-0000-0009",\n]\n')
+        db = self.root / "db"
+        (db / "crates" / "demo").mkdir(parents=True)
+        (db / "crates" / "demo" / "RUSTSEC-0000-0001.md").write_text(
+            '```toml\n[advisory]\nid = "RUSTSEC-0000-0001"\npackage = "demo"\n\n'
+            '[versions]\npatched = [">= 0.3.4"]\n```\n\n# Demo overflow\n')
+        ignores = updater.deny_ignores(self.repo)
+        self.assertEqual(ignores, {"RUSTSEC-0000-0001": "only the old cabin uses demo",
+                                   "RUSTSEC-0000-0009": "no reason given"})
+        found = updater.mark_deny_ignores(updater.match_rustsec(db, lock, "Cargo.lock"), ignores)
+        self.assertEqual((found[0].severity, found[0].action), ("info", "watch"))
+        report = updater.render(found, [], {}, self.repo, 10)
+        self.assertIn("Findings: none", report)
+        self.assertIn("- RUSTSEC-0000-0001 cargo:demo 0.3.1: only the old cabin uses demo", report)
+
+
+class FetchMissTest(unittest.TestCase):
+    def test_a_proxy_refusal_reads_as_proxy_blocked(self) -> None:
+        import urllib.error
+        blocked = urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden"))
+        self.assertEqual(updater.miss_reason(blocked), "proxy blocked (403)")
+        self.assertEqual(updater.miss_reason(urllib.error.URLError("timed out")), "URLError")
+        self.assertEqual(updater.miss_reason(TimeoutError()), "TimeoutError")
+
+
+class LockReviewTest(unittest.TestCase):
+    def test_a_refresh_names_new_crates_and_new_duplicate_majors(self) -> None:
+        before = {("zbus", "5.12.0"), ("serde", "1.0.200"), ("ashpd", "0.12.0")}
+        after = {("zbus", "5.12.0"), ("zbus", "6.0.1"), ("serde", "1.0.228"), ("ashpd", "0.14.0"),
+                 ("zbus-lockstep", "0.5.2")}
+        review = updater.lock_review(before, after)
+        self.assertEqual(review[0], "new crate zbus-lockstep 0.5.2")
+        self.assertEqual(len(review), 2)
+        self.assertTrue(review[1].startswith("duplicate majors zbus (5.12.0, 6.0.1);"))
+
+    def test_a_plain_refresh_reports_nothing(self) -> None:
+        before = {("serde", "1.0.200"), ("syn", "1.0.109"), ("syn", "2.0.80")}
+        after = {("serde", "1.0.228"), ("syn", "1.0.109"), ("syn", "2.0.110")}
+        self.assertEqual(updater.lock_review(before, after), [])
+
 
 if __name__ == "__main__":
     unittest.main()
