@@ -35,7 +35,7 @@ Rigor: nontrivial code, architecture, ambiguous forks, data modeling, multi-step
 
 ## Playbooks
 
-Investigation (read-only, evidence). Bug fix (repro, root cause, proof). Feature (data shape, then code). Refactoring (structure, behavior pinned). Perf (measure, fix, remeasure). Prototype (throwaway). PR: after verification.
+Investigation (read-only, evidence). Bug fix (repro, root cause, proof). Feature (data shape, then code). Refactoring (structure, behavior pinned). Perf→optimize; promote→bag-and-tag. Prototype (throwaway). PR: after verification.
 
 Else: short auditable procedure, then follow it.
 
