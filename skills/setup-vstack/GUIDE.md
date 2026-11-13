@@ -24,7 +24,7 @@ Prefer marketplace/plugin when the host has one. Else release or clone install. 
 
 | Host | Preferred | Fallback |
 |------|-----------|----------|
-| `cursor` | Local plugin or team marketplace (CONSUMING) | `install_for.sh --host cursor --global` or `--project …` → `.agents/skills` |
+| `cursor` | Team marketplace **Import from Repo** (CONSUMING Projects checklist) or local plugin | `install_for.sh --host cursor --global` or `--project …` → `.agents/skills` |
 | `claude` | `/plugin marketplace add blackviperxiii-ui/vstack` then `/plugin install vstack@vstack` | `install.sh --target claude` or `install_for.sh --host claude` (`--global` or `--project`) |
 | `codex` / `muse` / `windsurf` / `opencode` / `antigravity` / `agents` | `install_for.sh --host <name> --project …` (or `--global`) | `install.sh --target agents`; Codex also `npx skills add blackviperxiii-ui/vstack` |
 | `grok` | `install_for.sh --host grok --project …` or `--global` | `install.sh --target grok` |
@@ -67,6 +67,10 @@ On Claude and other hosts: skip this file. Model defaults are host-native; skill
 2. Ask the user to reload / start a new session if the host requires it.
 3. Start nontrivial work with `/viper-mode` (or load `viper-mode/SKILL.md`).
 4. Optional once: offer `/create-verification-skill` or `/create-formal-verification-skill` if the project has no verify harness / formal verify skill.
+
+### Cursor Projects / Cloud Agents
+
+Personal local plugin and Sync Skills do not reach Projects. Point admins at `docs/CONSUMING.md` → **Cloud Agents and Projects**: Import from Repo (not MCP), Required, Auto Refresh + GitHub App, Refresh after release, **new** agent. Repo ships root `plugin.json` (Agent Plugins) plus `.cursor-plugin/` for Cursor-hosted packaging.
 
 ## Hard rules
 

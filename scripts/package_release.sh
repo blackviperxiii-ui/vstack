@@ -9,7 +9,7 @@ out="$root/dist"
 stage="$(mktemp -d)"
 trap 'rm -rf "$stage"' EXIT
 
-for manifest in .claude-plugin/plugin.json .cursor-plugin/plugin.json; do
+for manifest in plugin.json .claude-plugin/plugin.json .cursor-plugin/plugin.json; do
 	if ! grep -q "\"version\": \"$version\"" "$root/$manifest"; then
 		echo "error: $manifest version does not match VERSION ($version)" >&2
 		exit 1
@@ -18,7 +18,7 @@ done
 
 mkdir -p "$stage/$name"
 for path in skills rules assets docs .claude-plugin .cursor-plugin scripts \
-	README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md; do
+	plugin.json README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md; do
 	cp -R "$root/$path" "$stage/$name/"
 done
 
