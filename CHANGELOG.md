@@ -4,6 +4,10 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Added
+
+- `elevate`, a skill that raises UI craft toward premium, modern, fluid feel (hierarchy, type, color, space, motion, states, anti-slop); not a feel diagnosis (`/elevate`).
+
 ### Changed
 
 - Encode reflect 2026-11-13 Accepted lessons: echo unique names (iyow / never-block); prove contrasted install channels; dual-ship + Projects verify (setup-vstack GUIDE); one-card / serialize shared ship files (follow-through / separate); Cursor skills-missing checklist + bag-and-tag three-manifest bump and ship-time skill-dir proof.
