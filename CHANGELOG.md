@@ -4,6 +4,8 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.2.1
+
 ### Added
 
 - `optimize`, a skill for app performance work: measure the real artifact, rank hot spots, fix root causes, remeasure (`/optimize`).
@@ -12,6 +14,7 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 ### Changed
 
 - `setup-vstack` installs and configures vstack for the current coding agent (Cursor, Claude Code, Codex, Antigravity, Muse, Windsurf, OpenCode, Grok Build); Cursor-only model rule; see `docs/CONSUMING.md`.
+- `README.md` restructured to standard GitHub conventions (badges, table of contents, clearer install and skill catalog sections).
 
 ## 1.2.0
 
