@@ -6,6 +6,7 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ### Added
 
+- `land-it`, a skill that deep-dives a whole app for product-feel misses (UX that never quite lands, weak interactivity, QoL gaps, code shortfalls) and ranks low-effort fixes (`/land-it`).
 - Multi-agent install surface: `scripts/install_for.sh` places skills into documented host paths (`.agents/skills`, `.claude/skills`, `.grok/skills`, Cursor plugin); `install.sh` gains `--target agents` and `--target grok`. Consumer docs (`CONSUMING.md`, `USAGE.md`, README) include a Works-with matrix for Cursor, Claude Code, Codex, Antigravity, Muse, Windsurf, OpenCode, Grok Build, and generic `AGENTS.md` readers; Aider/Continue and GrokHub stay documented-optional / deferred where formats are unconfirmed.
 - `updater`, a skill that finds every part of an app that needs updating: Cargo, npm and PyPI dependencies, RustSec and npm advisories, Rust and Node toolchains, GitHub Actions, World of Warcraft `.toc` interface numbers (from Blizzard's version service), Minecraft releases, AI model ids, API hosts, launchers, mod sources and locale gaps. A stdlib script (`skills/updater/scripts/updater.py`) does the checks and writes a ranked report; `bump --area` applies the safe ones. Anti-cheat guards are listed but never edited.
 - `stageshow`, a design skill for faux product UI stills, cursor demos and bento grids, vendored from Stageshow by Benji Taylor (MIT) at upstream `8020574`. Its short `SKILL.md` stays under the 400-token cap and points to the full `GUIDE.md`.
