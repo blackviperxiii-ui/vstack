@@ -109,7 +109,7 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 /viper-mode Fix token_check false positive when tokens.json is fresh
 ```
 
-3. Optionally run **`/setup-vstack`** once to write `~/.cursor/rules/vstack-models.mdc` with `auto` model defaults.
+3. Optionally run **`/setup-vstack`** once to install/configure for your agent (Cursor also writes `~/.cursor/rules/vstack-models.mdc` with `auto` defaults).
 
 ### Consumer repository pointer
 
@@ -133,7 +133,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 
 ### Workflow and verification skills
 
-- **`setup-vstack`**: Writes an always-applied rule configuring roles to inherit `auto` / Composer Standard (`/setup-vstack`).
+- **`setup-vstack`**: Detects the coding agent, installs via marketplace/plugin or `install_for.sh`, ensures the consumer pointer, and (Cursor only) writes the Auto / Composer model rule (`/setup-vstack`).
 - **`in-your-own-words`**: Restates the user's goal, problem, and smallest change before substantial edits (`/in-your-own-words`).
 - **`sharpen`**: Deepens a task without enlarging scope, then rewrites the prompt (`/sharpen`).
 - **`how`** and **`why`**: Explains how a subsystem works or why it is shaped that way with cited code and git evidence (`/how`, `/why`).

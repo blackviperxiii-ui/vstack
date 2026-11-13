@@ -4,6 +4,10 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Changed
+
+- `setup-vstack` installs and configures vstack for the current coding agent (Cursor, Claude Code, Codex, Antigravity, Muse, Windsurf, OpenCode, Grok Build); Cursor-only model rule; see `docs/CONSUMING.md`.
+
 ## 1.2.0
 
 ### Added

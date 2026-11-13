@@ -56,7 +56,7 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 4. Follow the principles and playbook; verify with the commands in [AGENTS.md](../AGENTS.md) before claiming done.
 5. Open PRs to **`beta`**, squash-merge when CI is green. Do not promote `beta` → `main` unless explicitly asked.
 
-Optional once: run **`/setup-vstack`** (or follow `skills/setup-vstack`) so model defaults prefer Auto / Composer 2.5 Standard.
+Optional once: run **`/setup-vstack`** (or follow `skills/setup-vstack`) to install and configure vstack for the current agent (multi-host; Cursor also gets Auto / Composer model defaults). See [CONSUMING.md](CONSUMING.md).
 
 ### Install for another project or agent
 
@@ -149,7 +149,7 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | Skill | Role |
 |-------|------|
 | `viper-mode` | Main router — playbooks, principles, subagents, evidence |
-| `setup-vstack` | Write always-applied model-preference rule |
+| `setup-vstack` | Multi-host install + always-on pointer; Cursor-only model rule |
 | `in-your-own-words` | Restate goals before substantial work |
 | `follow-through` | Task ledger, check-ins, stall detection; proven done |
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
