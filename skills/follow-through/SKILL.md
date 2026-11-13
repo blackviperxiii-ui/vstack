@@ -29,4 +29,4 @@ Unprompted at milestones, stalls/blockers, completion: **done / doing / blocked 
 
 ## 6. Handoff and closeout
 
-Before yield or session end: each open task is **done**, handed off with owner, or **blocked** with next step. Nothing unowned.
+Before yield or session end: each open task is **done**, handed off with owner, or **blocked** with next step. Nothing unowned. Run `python3 <this skill>/scripts/closeout.py` on every PR the run opened; it refuses **done** unless each is merged or named `--pending` with its blocker.
