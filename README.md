@@ -67,7 +67,7 @@ curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/insta
 curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash -s -- --target dir --dir /home/user/my-app/skills
 ```
 
-Pass `--version 1.2.1` to pin a specific release. Release archives (`.tar.gz`, `.zip`, and `SHA256SUMS`) are published on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [`CHANGELOG.md`](CHANGELOG.md) lists version history.
+Pass `--version 1.2.2` to pin a specific release. Release archives (`.tar.gz`, `.zip`, and `SHA256SUMS`) are published on the [Releases](https://github.com/blackviperxiii-ui/vstack/releases) page, and [`CHANGELOG.md`](CHANGELOG.md) lists version history.
 
 ### Install from a git clone
 
