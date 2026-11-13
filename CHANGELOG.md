@@ -4,6 +4,8 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.3.0
+
 ### Added
 
 - `elevate`, a skill that raises UI craft toward premium, modern, fluid feel (hierarchy, type, color, space, motion, states, anti-slop); not a feel diagnosis (`/elevate`).
