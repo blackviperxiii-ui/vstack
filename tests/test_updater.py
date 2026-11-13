@@ -132,6 +132,105 @@ class OfflineRunTest(RepoTestCase):
             updater.bump(self.repo, self.out, "anticheat")
 
 
+class SavedBodyTest(RepoTestCase):
+    WOW = {"wow": "12.1.5.1", "wow_classic": "5.5.4.1", "wow_classic_era": "1.15.9.1", "wow_anniversary": "2.5.6.1"}
+    ROUTER = "https://openrouter.ai/api/v1/models"
+
+    def version_url(self, product: str) -> str:
+        return f"https://us.version.battle.net/v2/products/{product}/versions"
+
+    def test_unusable_saved_bodies_stay_unchecked(self) -> None:
+        for product, build in self.WOW.items():
+            self.fetched(self.version_url(product), version_service(build))
+        # A Blizzard body with no us row, and an OpenRouter list cut off mid-file.
+        self.fetched(self.version_url("wow"), version_service("12.1.5.1").replace("\nus|", "\nkr|"))
+        self.fetched(self.ROUTER, '{"data": [{"id": "openai/gpt-5.1", "created": 1')
+        report = updater.run(self.repo, self.out, offline=True, limit=40, probe_mods=False, wow_ptr=False)
+        unchecked = report.split("Unchecked sources", 1)[1]
+        self.assertIn(f"- {self.version_url('wow')} (saved body unparseable, truncated?)", unchecked)
+        self.assertIn(f"- {self.ROUTER} (saved body unparseable, truncated?)", unchecked)
+        # The good bodies are used, not flagged.
+        self.assertNotIn(self.version_url("wow_classic"), unchecked)
+        # Each saved file used is listed with its size.
+        router = self.out / "fetched" / updater.fetched_name(self.ROUTER)
+        self.assertIn(f"- {router.name} ({router.stat().st_size} bytes)", report.split("Saved bodies used", 1)[1])
+
+    def test_a_parsed_body_with_no_rows_is_unchecked_and_a_good_one_is_not(self) -> None:
+        self.fetched(self.ROUTER, '{"error": "rate limited"}')
+        f = updater.Fetcher(self.out, offline=True)
+        updater.check_models(f, updater.inventory(self.repo))
+        self.assertEqual(f.misses.get(self.ROUTER), "saved body unparseable, truncated?")
+        self.fetched(self.ROUTER, '{"data": [{"id": "openai/gpt-5.1", "created": 1}]}')
+        f = updater.Fetcher(self.out, offline=True)
+        updater.check_models(f, updater.inventory(self.repo))
+        self.assertNotIn(self.ROUTER, f.misses)
+
+    def test_an_empty_saved_tag_list_is_unchecked(self) -> None:
+        url = "https://github.com/actions/checkout"
+        self.fetched(url + ".tags", "")
+        f = updater.Fetcher(self.out, offline=True)
+        updater.check_actions(f, self.repo, updater.inventory(self.repo))
+        self.assertEqual(f.misses.get(url), "saved body unparseable, truncated?")
+
+    def test_a_cut_off_crate_index_is_unchecked_not_an_older_latest(self) -> None:
+        url = "https://index.crates.io/se/rd/serde"
+        good = '{"name": "serde", "vers": "1.0.1"}\n{"name": "serde", "vers": "1.0.2"}\n'
+        self.fetched(url, good + '{"name": "serde", "vers": "1.0.3')
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertIsNone(updater.latest_crate(f, "serde"))
+        self.assertEqual(f.misses.get(url), "saved body unparseable, truncated?")
+        self.fetched(url, good)
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertEqual(updater.latest_crate(f, "serde"), "1.0.2")
+        self.assertNotIn(url, f.misses)
+
+    def test_registry_bodies_with_no_version_are_unchecked(self) -> None:
+        npm = "https://registry.npmjs.org/react/latest"
+        pypi = "https://pypi.org/pypi/requests/json"
+        for url in (npm, pypi):
+            self.fetched(url, '{"error": "rate limited"}')
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertIsNone(updater.latest_npm(f, "react"))
+        self.assertIsNone(updater.latest_pypi(f, "requests"))
+        self.assertEqual(f.misses.get(npm), "saved body unparseable, truncated?")
+        self.assertEqual(f.misses.get(pypi), "saved body unparseable, truncated?")
+        self.fetched(npm, '{"version": "19.2.0"}')
+        self.fetched(pypi, '{"info": {"version": "2.32.5"}}')
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertEqual(updater.latest_npm(f, "react"), "19.2.0")
+        self.assertEqual(updater.latest_pypi(f, "requests"), "2.32.5")
+        self.assertEqual(f.misses, {})
+
+    def test_toolchain_bodies_with_no_version_are_unchecked_without_crashing(self) -> None:
+        rust = "https://static.rust-lang.org/dist/channel-rust-stable.toml"
+        node = "https://nodejs.org/dist/index.json"
+        self.fetched(rust, 'manifest-version = "2"\n[pkg.cargo]\nversion = "0.9')
+        self.fetched(node, '{"error": "rate limited"}')
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertEqual(updater.check_toolchains(f, updater.inventory(self.repo)), [])
+        self.assertEqual(f.misses.get(rust), "saved body unparseable, truncated?")
+        self.assertEqual(f.misses.get(node), "saved body unparseable, truncated?")
+        self.fetched(rust, '[pkg.rust]\nversion = "1.99.0 (abc 2026-11-01)"\n')
+        self.fetched(node, '[{"version": "v26.1.0", "lts": false}, {"version": "v24.11.0", "lts": "Krypton"}]')
+        f = updater.Fetcher(self.out, offline=True)
+        found = updater.check_toolchains(f, updater.inventory(self.repo))
+        self.assertEqual(f.misses, {})
+        self.assertEqual([(x.surface, x.latest) for x in found],
+                         [("rust-version (MSRV)", "1.99.0"), ("node engines", "v24.11.0")])
+
+    def test_a_minecraft_body_with_no_release_is_unchecked(self) -> None:
+        url = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"
+        self.fetched(url, '{"error": "rate limited"}')
+        surface = updater.Surface("integrations", "launcher", "Minecraft", "", ["src/mc.rs"])
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertEqual(updater.check_minecraft(f, [surface]), [])
+        self.assertEqual(f.misses.get(url), "saved body unparseable, truncated?")
+        self.fetched(url, '{"latest": {"release": "1.22.1"}}')
+        f = updater.Fetcher(self.out, offline=True)
+        self.assertEqual([x.latest for x in updater.check_minecraft(f, [surface])], ["1.22.1"])
+        self.assertEqual(f.misses, {})
+
+
 class RustsecTest(RepoTestCase):
     def test_matches_lockfile_against_advisory_db(self) -> None:
         lock = self.write("Cargo.lock", 'version = 4\n\n[[package]]\nname = "demo"\nversion = "0.3.1"\n'
