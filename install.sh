@@ -3,11 +3,19 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/blackviperxiii-ui/vstack/main/install.sh | bash
 #   curl -fsSL .../install.sh | bash -s -- --target claude --version 1.1.0
+#   curl -fsSL .../install.sh | bash -s -- --target agents
+#   curl -fsSL .../install.sh | bash -s -- --target grok
+#   curl -fsSL .../install.sh | bash -s -- --target dir --dir path/to/skills
 #
-# Targets:
+# Targets (user-home / explicit dir only — never a random project path):
 #   cursor  Cursor local plugin at ~/.cursor/plugins/local/vstack (default)
 #   claude  Claude Code personal skills at ~/.claude/skills/<skill>
+#   agents  Portable Agent Skills dir at ~/.agents/skills/<skill>
+#           (Codex, Muse, Windsurf/OpenCode/Antigravity/Cursor compat)
+#   grok    Grok Build personal skills at ~/.grok/skills/<skill>
 #   dir     Skills only, into --dir PATH (any agent that reads a skills folder)
+#
+# For project-local installs from a git clone, use scripts/install_for.sh instead.
 set -euo pipefail
 
 repo="blackviperxiii-ui/vstack"
@@ -16,7 +24,7 @@ version="latest"
 dir=""
 
 usage() {
-	sed -n '2,12p' "$0" 2>/dev/null | sed 's/^# \{0,1\}//'
+	sed -n '2,18p' "$0" 2>/dev/null | sed 's/^# \{0,1\}//'
 	exit "${1:-0}"
 }
 
@@ -31,9 +39,9 @@ while [ $# -gt 0 ]; do
 done
 
 case "$target" in
-	cursor|claude) ;;
+	cursor|claude|agents|grok) ;;
 	dir) [ -n "$dir" ] || { echo "--target dir needs --dir PATH" >&2; exit 1; } ;;
-	*) echo "unknown target: $target (use cursor, claude, or dir)" >&2; exit 1 ;;
+	*) echo "unknown target: $target (use cursor, claude, agents, grok, or dir)" >&2; exit 1 ;;
 esac
 
 for tool in curl tar; do
@@ -83,6 +91,8 @@ case "$target" in
 		echo "Installed vstack $version as a Cursor plugin at $dest. Reload Cursor."
 		;;
 	claude) install_skills "$HOME/.claude/skills" ;;
+	agents) install_skills "$HOME/.agents/skills" ;;
+	grok) install_skills "$HOME/.grok/skills" ;;
 	dir) install_skills "$dir" ;;
 esac
 echo "Start with /viper-mode."

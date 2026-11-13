@@ -4,11 +4,11 @@
 
 This repo is **blackviperxiii-ui/vstack**. It is actively maintained. Use **vstack**, not pstack.
 
-For agents working *in this repo*, also read [AGENTS.md](../AGENTS.md). For dropping a one-liner into another project, see [CONSUMING.md](CONSUMING.md).
+For agents working *in this repo*, also read [AGENTS.md](../AGENTS.md). For installing into other agents and projects, see [CONSUMING.md](CONSUMING.md) (Works-with matrix).
 
 ## First 5 minutes
 
-1. **Install** — Cursor: install this repo as a plugin (see [CONSUMING.md](CONSUMING.md)). Other agents: `npx skills add blackviperxiii-ui/vstack --skill viper-mode`.
+1. **Install** — Cursor / Claude Code: plugin or marketplace ([CONSUMING.md](CONSUMING.md)). Other hosts: `./scripts/install_for.sh --host agents --project /path/to/app` or `npx skills add blackviperxiii-ui/vstack`.
 2. **Bind the skill** — In Cursor, pick **`/viper-mode`** from the `/` menu (plain text may not attach it), then state a goal.
 3. **Try one example** — e.g. `/viper-mode Fix token_check false positive when tokens.json is fresh`. Expect playbook + root-cause fix + verify before a PR to **`beta`**.
 
@@ -35,7 +35,7 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 | Multi-step or ambiguous work where you want a playbook + evidence | Yes |
 | Before promoting beta→main, after big features, or “run a QA walkthrough” | Yes — `/qa-walkthrough` (UI pass + code pass + ranked report) |
 | Shipping or changing audio/video playback, sync, codecs, or devices | Yes — `/av-qa-walkthrough` (objective AV pass + ranked report) |
-| Agent work in a repo that requires vstack (this one, or a consumer with the AGENTS snippet) | **Must** — load `skills/`, start with `viper-mode` |
+| Agent work in a repo that requires vstack (this one, or a consumer with the [CONSUMING](CONSUMING.md) AGENTS pointer) | **Must** — load `skills/`, start with `viper-mode` |
 | Quick factual Q&A, one-liner edits, pure brainstorming | Optional; skip if a full playbook adds noise |
 
 ## When not to use
@@ -57,25 +57,29 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 
 Optional once: run **`/setup-vstack`** (or follow `skills/setup-vstack`) so model defaults prefer Auto / Composer 2.5 Standard.
 
-### Install into another Cursor project
+### Install for another project or agent
+
+Prefer plugins/marketplaces. Do **not** `cp -R` skills by hand into `.cursor/skills/`.
 
 ```bash
-# Project-local
-cp -R skills/ path/to/your-repo/.cursor/skills/
+# From a vstack clone — portable project skills (Codex, Muse, Windsurf, Antigravity, OpenCode, …)
+./scripts/install_for.sh --host agents --project /path/to/your-app
 
-# Or user-global
-cp -R skills/ ~/.cursor/skills/
+# Cursor: local plugin (preferred)
+./scripts/install_for.sh --host cursor --global
+
+# Claude Code / Grok Build (user skills)
+./scripts/install_for.sh --host claude --global
+./scripts/install_for.sh --host grok --global
 ```
 
-Then pick `/viper-mode` from the `/` menu and paste the [CONSUMING.md](CONSUMING.md) snippet into that repo’s `AGENTS.md` / `CLAUDE.md` / `.cursor/rules`.
+Add the short consumer `AGENTS.md` pointer from [CONSUMING.md](CONSUMING.md) so agents keep using vstack instead of pstack. Full matrix: [CONSUMING.md](CONSUMING.md).
 
-### Other agents (Claude Code, Codex, etc.)
+### Other agents (Codex helper)
 
 ```bash
 npx skills add blackviperxiii-ui/vstack --skill viper-mode
 ```
-
-Add the same consumer snippet so future agents keep using vstack instead of pstack.
 
 ## Concrete examples
 
@@ -97,7 +101,7 @@ Expected: docs-only change (no skill token growth), README link, local checks gr
 
 ### Example 3 — Consumer repo requiring vstack
 
-Another project’s `AGENTS.md` includes the snippet from [CONSUMING.md](CONSUMING.md). An agent starting there must load that project’s copy of vstack skills (or the global install), start with `viper-mode`, and never switch to pstack.
+Another project’s `AGENTS.md` includes the pointer from [CONSUMING.md](CONSUMING.md), and skills were installed with `install_for.sh` (or a plugin). An agent starting there must load those skills, start with `viper-mode`, and never switch to pstack.
 
 ### Example 4 — QA walkthrough before promote
 
@@ -146,14 +150,16 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `viper-mode` | Main router — playbooks, principles, subagents, evidence |
 | `setup-vstack` | Write always-applied model-preference rule |
 | `in-your-own-words` | Restate goals before substantial work |
+| `follow-through` | Task ledger, check-ins, stall detection; proven done |
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
 | `qa-walkthrough` | UI + code QA; ranked report; safe fixes → beta PRs |
 | `av-qa-walkthrough` | AV playback/sync/quality/devices; ffprobe/ffmpeg evidence; ranked report |
 | `updater` | Find what needs updating (deps, advisories, toolchains, CI, addons, models, APIs); safe bumps as PRs, the rest as cards |
 | `stageshow` | Faux product UI stills, cursor demos, bento grids (React); reads `GUIDE.md`, copies a gold example, films and fixes. Vendored, MIT |
+| `how` / `why` / `architect` | Understand and design before nontrivial edits |
 
 ## Related
 
-- [CONSUMING.md](CONSUMING.md) — copy-paste snippet for other repos
+- [CONSUMING.md](CONSUMING.md) — Works-with matrix and install commands
 - [AGENTS.md](../AGENTS.md) — branch / PR / CI / verification rules for this repo
 - [README.md](../README.md) — install overview and upstream token policy
