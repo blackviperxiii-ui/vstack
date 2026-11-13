@@ -4,6 +4,20 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.3.0
+
+### Added
+
+- `elevate`, a skill that raises UI craft toward premium, modern, fluid feel (hierarchy, type, color, space, motion, states, anti-slop); not a feel diagnosis (`/elevate`).
+
+### Changed
+
+- Encode reflect 2026-11-13 Accepted lessons: echo unique names (iyow / never-block); prove contrasted install channels; dual-ship + Projects verify (setup-vstack GUIDE); one-card / serialize shared ship files (follow-through / separate); Cursor skills-missing checklist + bag-and-tag three-manifest bump and ship-time skill-dir proof.
+- `updater`: a saved `fetched/` body that does not parse, or has no usable row (a Blizzard table with no `us` row, an OpenRouter list or crates.io index cut off mid-file, an npm, PyPI, Minecraft, Rust channel or Node index body with no version, an empty tag list), stays under Unchecked sources as "saved body unparseable, truncated?" instead of dropping out of the report or crashing the run, and the report lists each `fetched/` file it used with its size. The skill says to save raw bytes only, run the repo's fast checks before opening a bump PR, leave draft with the last code push, and keep the run open until every PR it opened is merged.
+- `updater`: an advisory listed in a `deny.toml` `[advisories].ignore` drops to the watch list and the report names it under "Ignored advisories" with its recorded reason; a source the HTTPS proxy refuses reads "proxy blocked (403)" instead of `URLError`; `bump --area cargo` prints the new crates and new duplicate majors a lock refresh pulled in. The skill says to try each blocked source once, try each major as its own small PR before carding it, and name every medium-or-higher finding in the report.
+- `follow-through`: `scripts/closeout.py` is the closeout gate. Given every PR a run opened, it refuses "done" unless each one is merged or named `--pending` with its blocker.
+- AV ship check lessons: `av-qa-walkthrough` covers apps with no player (reply playback, barge-in echo test, codec boundaries, devices), prefers platform resampling over hand-written DSP, makes each scan line name the command run, keeps the real-media walk as a committed script, and puts decisions only on the decision card; `follow-through` reads the merge commit and checks when someone else merged your PR.
+
 ## 1.2.2
 
 ### Fixed

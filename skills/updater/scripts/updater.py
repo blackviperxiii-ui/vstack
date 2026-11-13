@@ -391,10 +391,16 @@ class Fetcher:
         self.offline = offline
         self.timeout = timeout
         self.misses: dict[str, str] = {}
+        # Saved bodies read this run: file name -> bytes, listed in the report.
+        self.used: dict[str, int] = {}
+
+    def saved(self, url: str) -> Path:
+        return self.dir / fetched_name(url)
 
     def text(self, url: str, headers: dict | None = None, secret: bool = False) -> str | None:
-        saved = self.dir / fetched_name(url)
+        saved = self.saved(url)
         if saved.is_file():
+            self.used[saved.name] = saved.stat().st_size
             return saved.read_text(encoding="utf-8", errors="replace")
         if self.offline:
             self.misses[url] = "offline"
@@ -410,7 +416,7 @@ class Fetcher:
                 self.misses[url] = f"HTTP {exc.code}"
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             if not secret:
-                self.misses[url] = type(exc).__name__
+                self.misses[url] = miss_reason(exc)
         return None
 
     def json(self, url: str, headers: dict | None = None, secret: bool = False):
@@ -420,7 +426,21 @@ class Fetcher:
         try:
             return json.loads(body)
         except json.JSONDecodeError:
+            if not secret:
+                self.unusable(url)
             return None
+
+    def unusable(self, url: str) -> None:
+        """A body came back but held nothing usable: keep the source unchecked."""
+        self.misses[url] = "saved body unparseable, truncated?" if self.saved(url).is_file() else "response unparseable"
+
+
+def miss_reason(exc: BaseException) -> str:
+    """A proxy that refuses CONNECT surfaces as URLError("Tunnel connection failed: 403 ...")."""
+    reason = str(getattr(exc, "reason", exc))
+    if "Tunnel connection failed" in reason or ("403" in reason and "proxy" in reason.lower()):
+        return "proxy blocked (403)" if "403" in reason else "proxy blocked"
+    return type(exc).__name__
 
 
 def run_cmd(args: list[str], cwd: Path, timeout: int = 300) -> tuple[int, str]:
@@ -443,13 +463,21 @@ def sparse_index_path(name: str) -> str:
 
 
 def latest_crate(f: Fetcher, name: str) -> str | None:
-    body = f.text(f"https://index.crates.io/{sparse_index_path(name)}")
+    url = f"https://index.crates.io/{sparse_index_path(name)}"
+    body = f.text(url)
+    if body is not None and not body.strip():
+        f.unusable(url)
+        return None
     best = None
     for line in (body or "").splitlines():
         try:
             entry = json.loads(line)
         except json.JSONDecodeError:
-            continue
+            entry = None
+        if not isinstance(entry, dict):
+            # A cut-off index would otherwise give an older "latest".
+            f.unusable(url)
+            return None
         v = parse_version(entry.get("vers", ""))
         if v and not entry.get("yanked") and (best is None or v > best[0]):
             best = (v, entry["vers"])
@@ -509,7 +537,35 @@ def check_rust_advisories(f: Fetcher, repo: Path, cache: Path, surfaces: list[Su
                 f.misses["https://github.com/rustsec/advisory-db"] = "git clone failed"
                 continue
         out += match_rustsec(db, lock_path, lock)
-    return dedupe(out)
+    return mark_deny_ignores(dedupe(out), deny_ignores(repo))
+
+
+def deny_ignores(repo: Path) -> dict[str, str]:
+    """Advisory id -> reason from every deny.toml [advisories].ignore list."""
+    out: dict[str, str] = {}
+    for path in walk(repo):
+        if path.name != "deny.toml":
+            continue
+        try:
+            doc = tomllib.loads(path.read_text(encoding="utf-8"))
+        except (tomllib.TOMLDecodeError, OSError):
+            continue
+        for item in (doc.get("advisories") or {}).get("ignore") or []:
+            if isinstance(item, str):
+                out.setdefault(item, "no reason given")
+            elif isinstance(item, dict) and item.get("id"):
+                out[item["id"]] = str(item.get("reason") or "no reason given").strip()
+    return out
+
+
+def mark_deny_ignores(findings: list[Finding], ignores: dict[str, str]) -> list[Finding]:
+    """An advisory the repo already ignores is a watch item that carries its recorded reason."""
+    for x in findings:
+        adv = x.data.get("advisory")
+        if adv in ignores:
+            x.severity, x.action = "info", "watch"
+            x.data["ignored"] = ignores[adv]
+    return findings
 
 
 def dedupe(findings: list[Finding]) -> list[Finding]:
@@ -627,13 +683,24 @@ def check_npm_audit(repo: Path, surfaces: list[Surface]) -> list[Finding]:
 
 
 def latest_npm(f: Fetcher, name: str) -> str | None:
-    data = f.json(f"https://registry.npmjs.org/{urllib.parse.quote(name, safe='@')}/latest")
-    return data.get("version") if isinstance(data, dict) else None
+    url = f"https://registry.npmjs.org/{urllib.parse.quote(name, safe='@')}/latest"
+    data = f.json(url)
+    version = data.get("version") if isinstance(data, dict) else None
+    if data is not None and not isinstance(version, str):
+        f.unusable(url)
+        return None
+    return version
 
 
 def latest_pypi(f: Fetcher, name: str) -> str | None:
-    data = f.json(f"https://pypi.org/pypi/{name}/json")
-    return (data or {}).get("info", {}).get("version")
+    url = f"https://pypi.org/pypi/{name}/json"
+    data = f.json(url)
+    info = data.get("info") if isinstance(data, dict) else None
+    version = info.get("version") if isinstance(info, dict) else None
+    if data is not None and not isinstance(version, str):
+        f.unusable(url)
+        return None
+    return version
 
 
 def check_actions(f: Fetcher, repo: Path, surfaces: list[Surface]) -> list[Finding]:
@@ -644,7 +711,8 @@ def check_actions(f: Fetcher, repo: Path, surfaces: list[Surface]) -> list[Findi
         url = f"https://github.com/{s.name}"
         saved = f.dir / fetched_name(url + ".tags")
         if saved.is_file():
-            tags_text = saved.read_text(encoding="utf-8")
+            f.used[saved.name] = saved.stat().st_size
+            tags_text = saved.read_text(encoding="utf-8", errors="replace")
         elif f.offline:
             f.misses[url] = "offline"
             continue
@@ -656,6 +724,8 @@ def check_actions(f: Fetcher, repo: Path, surfaces: list[Surface]) -> list[Findi
         tags = [parse_version(t.rsplit("/", 1)[-1]) for t in tags_text.split()]
         tags = [t for t in tags if t]
         if not tags:
+            if saved.is_file():
+                f.misses[url] = "saved body unparseable, truncated?"
             continue
         newest = max(tags)
         for ref in s.current.split(" | "):
@@ -674,9 +744,12 @@ def check_toolchains(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
     out = []
     rust = [s for s in surfaces if s.kind in ("rust-toolchain", "rust-msrv")]
     if rust:
-        body = f.text("https://static.rust-lang.org/dist/channel-rust-stable.toml")
+        url = "https://static.rust-lang.org/dist/channel-rust-stable.toml"
+        body = f.text(url)
         m = re.search(r'\[pkg\.rust\]\s*\nversion\s*=\s*"(\d+\.\d+\.\d+)', body or "")
         stable = m.group(1) if m else None
+        if body is not None and not stable:
+            f.unusable(url)
         for s in rust:
             cur = parse_version(s.current.split(" | ")[0]) if s.current else None
             if not stable or not cur:
@@ -689,8 +762,12 @@ def check_toolchains(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
                                    "floor is far behind stable", s.files[:3]))
     node = [s for s in surfaces if s.kind in ("node-engine", "node-pin")]
     if node:
-        index = f.json("https://nodejs.org/dist/index.json") or []
-        lts = next((r for r in index if r.get("lts")), None)
+        url = "https://nodejs.org/dist/index.json"
+        index = f.json(url)
+        rows = [r for r in index if isinstance(r, dict)] if isinstance(index, list) else []
+        lts = next((r for r in rows if r.get("lts") and parse_version(str(r.get("version", "")))), None)
+        if index is not None and not lts:
+            f.unusable(url)
         for s in node:
             cur = req_base(s.current)
             if not lts or not cur:
@@ -709,12 +786,16 @@ def wow_builds(f: Fetcher, products: dict[str, str]) -> dict[str, str]:
     """Live client builds per product from Blizzard's version service."""
     out = {}
     for product in products:
-        body = f.text(f"https://us.version.battle.net/v2/products/{product}/versions")
+        url = f"https://us.version.battle.net/v2/products/{product}/versions"
+        body = f.text(url)
         for line in (body or "").splitlines():
             cols = line.split("|")
             if cols and cols[0] == "us" and len(cols) > 5:
                 out[product] = cols[5]
                 break
+        else:
+            if body is not None:
+                f.unusable(url)
     return out
 
 
@@ -739,9 +820,13 @@ def check_minecraft(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
     mc = [s for s in surfaces if s.kind.startswith("minecraft") or (s.kind == "launcher" and s.name == "Minecraft")]
     if not mc:
         return []
-    data = f.json("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json") or {}
-    release = (data.get("latest") or {}).get("release")
-    if not release:
+    url = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"
+    data = f.json(url)
+    latest = data.get("latest") if isinstance(data, dict) else None
+    release = latest.get("release") if isinstance(latest, dict) else None
+    if not isinstance(release, str) or not release:
+        if data is not None:
+            f.unusable(url)
         return []
     out = []
     for s in mc:
@@ -770,8 +855,12 @@ def check_models(f: Fetcher, surfaces: list[Surface]) -> list[Finding]:
                 source[fam] = "official"
     missing = [fam for fam in families if fam not in catalog and fam in OPENROUTER_PREFIX]
     if missing:
-        data = f.json("https://openrouter.ai/api/v1/models") or {}
-        for m in data.get("data", []):
+        url = "https://openrouter.ai/api/v1/models"
+        data = f.json(url)
+        if data is not None and not (isinstance(data, dict) and isinstance(data.get("data"), list)):
+            f.unusable(url)
+        rows = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), list) else []
+        for m in rows:
             mid = m.get("id", "")
             for fam in missing:
                 pre = OPENROUTER_PREFIX[fam]
@@ -850,7 +939,8 @@ def rank(findings: list[Finding]) -> list[Finding]:
     return sorted(findings, key=lambda x: (SEVERITY_ORDER.get(x.severity, 9), x.area, x.surface))
 
 
-def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, str], repo: Path, limit: int) -> str:
+def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, str], repo: Path, limit: int,
+           used: dict[str, int] | None = None) -> str:
     ranked = rank(findings)
     actionable = [x for x in ranked if x.action in ("auto", "card", "manual") and x.severity != "info"]
     lines = [f"# Updater report: {repo.name}", ""]
@@ -877,7 +967,7 @@ def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, s
     compat = [x for x in watch if x.action == "auto"]
     if compat:
         lines += ["", f"Lockfile-only: {len(compat)} deps have newer compatible releases (a refresh picks them up)."]
-    other = [x for x in watch if x.action != "auto"]
+    other = [x for x in watch if x.action != "auto" and not x.data.get("ignored")]
     if other:
         lines += ["", "Watch list (no action now):"]
         groups: dict[str, list[Finding]] = {}
@@ -887,10 +977,17 @@ def render(findings: list[Finding], surfaces: list[Surface], misses: dict[str, s
             shown = "; ".join(f"{x.surface}{' ' + _cut(x.latest, 40) if x.latest else ''}" for x in xs[:6])
             more = f" (+{len(xs) - 6})" if len(xs) > 6 else ""
             lines.append(f"- {area}: {shown}{more}")
+    ignored = [x for x in ranked if x.data.get("ignored")]
+    if ignored:
+        lines += ["", "Ignored advisories (deny.toml; name each in the report with its reason):"]
+        lines += [f"- {x.data['advisory']} {x.surface} {x.current}: {_cut(x.data['ignored'], 120)}" for x in ignored]
     if misses:
         lines += ["", "Unchecked sources (fetch elsewhere, save under fetched/<file>, rerun):"]
         for url, why in sorted(misses.items()):
             lines.append(f"- {url} ({why}) -> {fetched_name(url + ('.tags' if url.count('/') == 4 and 'github.com' in url else ''))}")
+    if used:
+        lines += ["", "Saved bodies used (fetched/):"]
+        lines += [f"- {name} ({size} bytes)" for name, size in sorted(used.items())]
     return "\n".join(lines) + "\n"
 
 
@@ -907,6 +1004,38 @@ def bump_area(x: Finding) -> str:
 
 # ---------------------------------------------------------------- bump
 
+def lock_packages(lock: Path) -> set[tuple[str, str]]:
+    try:
+        doc = tomllib.loads(lock.read_text(encoding="utf-8"))
+    except (tomllib.TOMLDecodeError, OSError):
+        return set()
+    return {(p.get("name", ""), p.get("version", "")) for p in doc.get("package", [])}
+
+
+def _major(version: str) -> str:
+    v = parse_version(version) or (0, 0, 0)
+    return f"{v[0]}" if v[0] else f"0.{v[1]}"
+
+
+def lock_review(before: set[tuple[str, str]], after: set[tuple[str, str]]) -> list[str]:
+    """New crates and new duplicate majors a lock refresh pulled in."""
+    old_names = {n for n, _ in before}
+    out = [f"new crate {n} {v}" for n, v in sorted(after - before) if n not in old_names]
+
+    def majors(pkgs):
+        m: dict[str, set[str]] = {}
+        for n, v in pkgs:
+            m.setdefault(n, set()).add(_major(v))
+        return m
+    was = majors(before)
+    for name, ms in sorted(majors(after).items()):
+        if len(ms) > 1 and ms != was.get(name, set()) and len(ms) > len(was.get(name, set())):
+            vers = ", ".join(sorted(v for n, v in after if n == name))
+            out.append(f"duplicate majors {name} ({vers}); hold the crate that pulls the new one in"
+                       f" (cargo update -p <crate>@<new> --precise <old>) and card it")
+    return out
+
+
 def bump(repo: Path, out: Path, area: str) -> list[str]:
     findings = [Finding(**d) for d in json.loads((out / "findings.json").read_text(encoding="utf-8"))]
     todo = [x for x in findings if x.action == "auto" and bump_area(x) == area]
@@ -914,9 +1043,12 @@ def bump(repo: Path, out: Path, area: str) -> list[str]:
     if area == "cargo":
         for lock in sorted({fl for x in todo for fl in x.files if fl.endswith("Cargo.lock")} or {"Cargo.lock"}):
             cwd = (repo / lock).parent
+            before = lock_packages(repo / lock)
             code, _ = run_cmd(["cargo", "update"], cwd, 900)
             if code == 0:
                 changed.append(lock)
+                for line in lock_review(before, lock_packages(repo / lock)):
+                    print(f"review {lock}: {line}")
     elif area == "npm":
         for x in todo:
             if x.area != "deps":
@@ -1002,7 +1134,7 @@ def run(repo: Path, out: Path, offline: bool, limit: int, probe_mods: bool, wow_
     findings += check_watch(f, surfaces, probe_mods)
     findings = rank(findings)
     (out / "findings.json").write_text(json.dumps([asdict(x) for x in findings], indent=1), encoding="utf-8")
-    report = render(findings, surfaces, f.misses, repo, limit)
+    report = render(findings, surfaces, f.misses, repo, limit, f.used)
     (out / "report.md").write_text(report, encoding="utf-8")
     return report
 
