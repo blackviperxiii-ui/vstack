@@ -68,9 +68,21 @@ On Claude and other hosts: skip this file. Model defaults are host-native; skill
 3. Start nontrivial work with `/viper-mode` (or load `viper-mode/SKILL.md`).
 4. Optional once: offer `/create-verification-skill` or `/create-formal-verification-skill` if the project has no verify harness / formal verify skill.
 
+### Cursor: skills missing but VERSION looks right
+
+1. Compare local `VERSION` to the skill dirs actually present under the active install / plugin tree.
+2. List Cursor plugin cache hashes (e.g. under `~/.cursor/plugins/cache/…/vstack*`); if two trees disagree, delete only the stale hash.
+3. Reinstall (`install.sh --version` or marketplace refresh), then **Reload Window**.
+4. Do not blame slash-menu truncation until dual-cache is proven.
+5. Cloud Agents cannot prove the user's home FS — route a machine-capable worker or give the user the commands above.
+
 ### Cursor Projects / Cloud Agents
 
-Personal local plugin and Sync Skills do not reach Projects. Point admins at `docs/CONSUMING.md` → **Cloud Agents and Projects**: Import from Repo (not MCP), Required, Auto Refresh + GitHub App, Refresh after release, **new** agent. Repo ships root `plugin.json` (Agent Plugins) plus `.cursor-plugin/` for Cursor-hosted packaging.
+Personal local plugin and Sync Skills do not reach Projects. Point admins at `docs/CONSUMING.md` → **Cloud Agents and Projects**: Import from Repo (not MCP), Required, Auto Refresh + GitHub App, Refresh after release, **new** agent.
+
+**Dual-ship first:** repo must ship root `plugin.json` (Agent Plugins) **and** `.cursor-plugin/plugin.json`. If Import from Repo works but the Cursor-hosted/marketplace plugin does not, verify dual-ship before calling it docs/dashboard-only.
+
+**Don't close** an Import-vs-Cursor-supplied gap until both channels list skills in a **new** Project agent. Packaging gap → dual-ship root + `.cursor-plugin/`.
 
 ## Hard rules
 

@@ -49,6 +49,8 @@ Against `docs/CONSUMING.md`:
 - Marketplace / plugin install one-liners in the release notes still match CONSUMING.
 - Spot-check that `viper-mode/SKILL.md` is reachable on the documented install path for at least one host.
 
+**Cursor skill visibility (VERSION alone is insufficient):** when the cut adds skills, prove the new skill dirs exist under the active install (prefer a local machine). If dual cache trees disagree, purge only the stale hash. A cloud-only run must not claim Cursor visibility is proven.
+
 ## Report
 
 PR URLs + merge SHAs (bump and promote), release URL, tag → SHA, tree match `beta` ≡ `main`, any deferred Dependabot items.
