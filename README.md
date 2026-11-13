@@ -122,7 +122,7 @@ npx skills add blackviperxiii-ui/vstack --skill viper-mode
 
 ## Expand later
 
-Still unported from pstack (see `UPSTREAM.json` `unported`): `arena` (multi-model panels, off by default here), `automate-me`, `make-bot-ui`, `no-comments` (needs a pstack agent), `poteto-help`, `bro`, and principles too small to port under the 35% token cap (their one-liners live in `viper-mode`).
+Still unported from pstack (see `UPSTREAM.json` `unported`): `arena` (multi-model panels, off by default here), `automate-me`, `make-bot-ui`, `no-comments` (needs a pstack agent), `poteto-help`, `bro`, and small principles deferred under the token cap. Most of those principles already appear as one-liners in `viper-mode`; `exhaust-the-design-space` and `migrate-callers-then-delete-legacy-apis` do not yet.
 
 ## Releasing
 
@@ -145,7 +145,7 @@ This repo tracks [cursor/plugins `pstack`](https://github.com/cursor/plugins/tre
 
 Pushes to `main` and `beta` run the same limits against the commit before the push, reading the `token-growth-approved` label from the merged PR. Nightly and manual runs have no base, so they check only that `tokens.json` is fresh.
 
-Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `land-it`. Other upstream skills stay listed under `unported` until you add them.
+Mapped ports today: `viper-mode` ↔ `poteto-mode`, `setup-vstack` ↔ `setup-pstack`, `principle-fix-root-causes` ↔ same, `in-your-own-words`, `sharpen`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `unslop`, `ketchup`, `create-verification-skill`, `maintain-verification-skill`, `ketchup-video`, `statechart`, plus same-name ports of `how`, `why`, `teach`, `recall`, `architect`, `figure-it-out`, `show-me-your-work`, `blast-radius`, `interrogate`, `tdd`, `correct`, `reflect`, `swarm`, `benchmark-checklist`, `technical-writing`, `typescript-best-practices`, and 18 `principle-*` skills. Original: `qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`. Other upstream skills stay listed under `unported` until you add them.
 
 ---
 
