@@ -19,7 +19,7 @@ More detail: [Quick start](#quick-start) and [Concrete examples](#concrete-examp
 Think of vstack as a playbook pack for your agent:
 
 1. **`viper-mode`** is the main router. It picks a playbook, builds a short todo list, applies principles (smallest fix, verify the real artifact, fix root causes), and uses subagents carefully so the parent chat stays short.
-2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), understanding code (`how`, `why`, `teach`, `recall`), design (`architect`, `figure-it-out`), review (`blast-radius`, `interrogate`), bugs (`tdd`), app QA (`qa-walkthrough`, `av-qa-walkthrough`), and one `principle-*` skill per principle `viper-mode` cites.
+2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), understanding code (`how`, `why`, `teach`, `recall`), design (`architect`, `figure-it-out`), review (`blast-radius`, `interrogate`), bugs (`tdd`), product feel (`land-it`), app QA (`qa-walkthrough`, `av-qa-walkthrough`), and one `principle-*` skill per principle `viper-mode` cites.
 3. Repo tooling (`scripts/`, CI) keeps skills lean (token budgets) and safe (lint, secret scan). That tooling is for *maintaining* vstack; day-to-day *use* is loading the skills.
 
 Credit for the method goes to Lauren Tan’s pstack. Naming and branding here are Viper Stack only.
@@ -33,6 +33,7 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 | Nontrivial code, architecture, data modeling, API boundaries | Yes — start with `viper-mode` |
 | Bugs, refactors, perf work, shipping PRs, reviews | Yes |
 | Multi-step or ambiguous work where you want a playbook + evidence | Yes |
+| The app works but “doesn’t hit right” (feel, interactivity, QoL) | Yes — `/land-it` (whole-app feel dive + ranked low-effort fixes) |
 | Before promoting beta→main, after big features, or “run a QA walkthrough” | Yes — `/qa-walkthrough` (UI pass + code pass + ranked report) |
 | Shipping or changing audio/video playback, sync, codecs, or devices | Yes — `/av-qa-walkthrough` (objective AV pass + ranked report) |
 | Agent work in a repo that requires vstack (this one, or a consumer with the [CONSUMING](CONSUMING.md) AGENTS pointer) | **Must** — load `skills/`, start with `viper-mode` |
@@ -152,6 +153,7 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `in-your-own-words` | Restate goals before substantial work |
 | `follow-through` | Task ledger, check-ins, stall detection; proven done |
 | `principle-fix-root-causes` | Reproduce → root cause → fix at source |
+| `land-it` | Whole-app product-feel dive; miss-the-mark UX/QoL/code; ranked low-effort fixes |
 | `qa-walkthrough` | UI + code QA; ranked report; safe fixes → beta PRs |
 | `av-qa-walkthrough` | AV playback/sync/quality/devices; ffprobe/ffmpeg evidence; ranked report |
 | `updater` | Find what needs updating (deps, advisories, toolchains, CI, addons, models, APIs); safe bumps as PRs, the rest as cards |
