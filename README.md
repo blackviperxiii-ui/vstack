@@ -28,7 +28,7 @@ Instead of defaulting to expensive frontier-model committees, `vstack` defaults 
 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
-- **56 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`, `elevate`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
+- **58 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`, `elevate`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
 - **Multi-agent packaging**: Ships Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)), root Agent Plugins ([`plugin.json`](plugin.json)), and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)) manifests, plus installers for portable `.agents/skills/` and `.grok/skills/` layouts. Cursor Projects: see [`docs/CONSUMING.md`](docs/CONSUMING.md).
 - **CI-enforced token caps**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and blocks unapproved prompt growth on pull requests and branch pushes.
 
@@ -168,6 +168,8 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 
 - **`elevate`**: Raises real product UI craft toward premium, modern, fluid feel (`/elevate`). Read `GUIDE.md` for checklists.
 - **`stageshow`**: Builds faux product UI stills, cursor demos, and bento grids in React with automated filming checks (`/stageshow`). Vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (MIT; see [`skills/stageshow/VENDORED.md`](skills/stageshow/VENDORED.md)). Previewing or filming requires Node.js 20.19+ (`npm install` inside `skills/stageshow`) and local Chrome.
+- **`modern-web-guidance`**: Google Chrome's guides for modern HTML, CSS, client-side JavaScript, accessibility, forms, performance and security, read from local files for web frontend work (`/modern-web-guidance`). `elevate`, `land-it` and `qa-walkthrough` point to it. Vendored from [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) by Google (Apache-2.0; see [`skills/modern-web-guidance/NOTICE.md`](skills/modern-web-guidance/NOTICE.md)). It never runs the upstream `npx` CLI. Resync: [`docs/modern-web-guidance.md`](docs/modern-web-guidance.md).
+- **`chrome-extensions`**: Google Chrome's Manifest V3 guide for building and publishing Chrome extensions (`/chrome-extensions`). Vendored from the same release (Apache-2.0).
 
 ### Principle skills
 
@@ -223,7 +225,7 @@ This repository tracks [`cursor/plugins` (`pstack`)](https://github.com/cursor/p
 - New **mapped** skills (listed in `UPSTREAM.json` `mapping`) are allowed only on sync PRs and must be `<= 35%` of the upstream skill's token count at the new SHA.
 - New **original** skills (not in `UPSTREAM.json` `mapping`) are allowed on any PR if they stay `<= 400` tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Currently [`UPSTREAM.json`](UPSTREAM.json) maps 47 ported skills, while 9 skills are `vstack`-original (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `elevate`, `optimize`, `bag-and-tag`). Upstream skills intentionally omitted under the token budget (`arena`, `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
+Currently [`UPSTREAM.json`](UPSTREAM.json) maps 47 ported skills, while 11 skills are `vstack`-original or vendored from other sources (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `elevate`, `optimize`, `bag-and-tag`, `modern-web-guidance`, `chrome-extensions`). Upstream skills intentionally omitted under the token budget (`arena`, `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
 
 ## Contributing
 
@@ -256,4 +258,4 @@ python3 scripts/token_check.py
 
 Licensed under the `MIT` License. See [`LICENSE`](LICENSE) for full text.
 
-`vstack` is adapted from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (`MIT`), and `skills/stageshow` is vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (`MIT`).
+`vstack` is adapted from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (`MIT`), `skills/stageshow` is vendored from [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) by Benji Taylor (`MIT`), and `skills/modern-web-guidance` and `skills/chrome-extensions` are vendored from [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) by Google (`Apache-2.0`; each folder keeps its `LICENSE` and `NOTICE.md`).
