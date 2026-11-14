@@ -4,6 +4,17 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.4.0
+
+### Added
+
+- `modern-web-guidance` and `chrome-extensions`, vendored unmodified from Google Chrome's [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) v1.0.0 (`4dd9683`, Apache-2.0, `LICENSE` and `NOTICE.md` in each folder). A short vstack `SKILL.md` scopes the trigger to web frontend work and looks guides up in local files (`INDEX.md`, `guides/`); it never runs the upstream `npx ...@latest` CLI, its `install` command, or `legacy-scan`, so nothing unpinned runs and no telemetry is sent. Google's own `SKILL.md` is kept as `UPSTREAM_SKILL.md` (and `GUIDE.md` for extensions).
+- `scripts/sync_modern_web_guidance.py` resyncs an exact upstream tag or commit (it refuses `latest` and branches), blocks on hidden Unicode, skips scripts, and writes `VENDORED.json` with a SHA-256 for every file; `--check` fails if any vendored file drifts. Steps: `docs/modern-web-guidance.md`.
+
+### Changed
+
+- `elevate`, `land-it` and `qa-walkthrough` point web frontend work to `modern-web-guidance` (no token growth).
+
 ## 1.3.0
 
 ### Added

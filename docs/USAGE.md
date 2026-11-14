@@ -164,6 +164,8 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 | `av-qa-walkthrough` | AV playback/sync/quality/devices; ffprobe/ffmpeg evidence; ranked report |
 | `updater` | Find what needs updating (deps, advisories, toolchains, CI, addons, models, APIs); safe bumps as PRs, the rest as cards |
 | `stageshow` | Faux product UI stills, cursor demos, bento grids (React); reads `GUIDE.md`, copies a gold example, films and fixes. Vendored, MIT |
+| `modern-web-guidance` | Google Chrome's modern HTML/CSS/JS guides for web frontend work; search `INDEX.md`, read the guide, apply its fallbacks. Offline, no `npx`. Vendored, Apache-2.0 |
+| `chrome-extensions` | Google Chrome's Manifest V3 build and Web Store publishing guide. Vendored, Apache-2.0 |
 | `how` / `why` / `architect` | Understand and design before nontrivial edits |
 
 ## Related

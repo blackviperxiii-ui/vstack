@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Viper's skill stack for Cursor agents (viper-mode and supporting skills).",
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
       "name": "vstack",
       "source": "./",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "description": "Viper's skill stack for Cursor agents."
     }
   ]
