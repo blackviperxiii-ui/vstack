@@ -38,8 +38,8 @@ If someone does run the CLI, pin `modern-web-guidance@1.0.0` and set
    python3 scripts/sync_modern_web_guidance.py --check
    ```
 
-   The sync stops if any file has hidden Unicode (zero-width, bidi-control or
-   tag characters). Scripts are skipped and listed under `skipped` in
+   The sync stops if any file has hidden Unicode (zero-width, bidi-control,
+   bidi-isolate, soft-hyphen or tag characters). Scripts are skipped and listed under `skipped` in
    `VENDORED.json`.
 4. If upstream changed its workflow (new CLI flags, new guide id format), update
    the vstack `SKILL.md` wrapper to match, keeping it offline and under the

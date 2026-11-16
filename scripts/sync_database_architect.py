@@ -39,17 +39,31 @@ VSTACK_OWNED = frozenset({"SKILL.md", "NOTICE.md"})
 GENERATED = frozenset({"VENDORED.json"})
 
 # Text an agent prompt has no reason to carry. Any hit blocks the sync until a
-# human has read the upstream change.
+# human has read the upstream change. Lines ending in a backslash are joined
+# with the next one first, so a command split across lines is seen whole.
+SHELLS = r"(sudo\s+)?(ba|z|da|k|fi)?sh|python3?|node|perl|ruby|iex|invoke-expression"
 RED_FLAGS = {
-    "download piped to a shell": re.compile(r"\b(curl|wget)\b[^\n]*\|\s*(ba|z)?sh\b", re.I),
-    "fetches a URL with curl or wget": re.compile(r"\b(curl|wget)\s+\S*https?://", re.I),
-    "unpinned npx package": re.compile(r"\bnpx\s+(-y\s+)?[\w@/.-]+@latest\b", re.I),
-    "credential path": re.compile(r"~/\.(ssh|aws|grok|config/gh)\b|\bauth\.json\b|\bid_rsa\b", re.I),
-    "instruction override": re.compile(
-        r"\b(ignore|disregard|forget)\b[^\n]{0,30}\b(previous|prior|above|earlier|system)\b[^\n]{0,20}\b(instructions?|prompts?|rules?)\b",
+    "download piped to a shell": re.compile(rf"\b(curl|wget|iwr|invoke-webrequest)\b.*\|\s*({SHELLS})\b", re.I),
+    "runs downloaded code": re.compile(
+        r"(<\(|\$\()\s*(curl|wget)\b|\b(curl|wget)\b.*&&\s*(sudo\s+)?(ba|z)?sh\b|\bpip3?\s+install\s+\S*https?://", re.I
+    ),
+    "fetches a URL with curl or wget": re.compile(r"\b(curl|wget)\b[^\n]*\bhttps?://", re.I),
+    "unpinned npx package": re.compile(r"\bnpx\s+(-{1,2}[\w-]+\s+)*(?!-)(?![\w@/.-]+@\d)[\w@/.-]+", re.I),
+    "credential path": re.compile(
+        r"(~|\$\{?HOME\}?|/home/[^/\s]+|/root)/\.(ssh|aws|grok|docker|kube|gnupg|config/gh|pgpass|netrc|my\.cnf|git-credentials)\b"
+        r"|\bauth\.json\b|\bid_(rsa|ed25519|ecdsa)\b|\.pgpass\b|\.netrc\b",
         re.I,
     ),
-    "hides output from the user": re.compile(r"\b(do not|don't|never)\s+(tell|show|mention to)\s+the\s+user\b", re.I),
+    "instruction override": re.compile(
+        r"\b(ignore|disregard|forget|override)\b[^\n]{0,60}\b(instructions?|prompts?|rules?|guidelines?|safety)\b"
+        r"|\b(new|real|actual|updated)\s+(system\s+)?instructions\b|\byou\s+are\s+now\b",
+        re.I,
+    ),
+    "hides output from the user": re.compile(
+        r"\b(do not|don't|never)\s+(tell|show|mention|reveal|report)\b[^\n]{0,30}\b(the\s+)?user\b|\bwithout\s+telling\b",
+        re.I,
+    ),
+    "HTML comment (hidden in a rendered diff)": re.compile(r"<!--"),
 }
 
 
@@ -60,20 +74,34 @@ def git(*args: str, cwd: Path) -> str:
 
 
 def read_blob(src: Path, commit: str, path: str) -> bytes:
-    return subprocess.run(
-        ["git", "cat-file", "blob", f"{commit}:{path}"], cwd=src, check=True, capture_output=True
-    ).stdout
+    result = subprocess.run(["git", "cat-file", "blob", f"{commit}:{path}"], cwd=src, capture_output=True)
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", "replace").strip()
+        raise SyncError(f"upstream has no {path} at {commit[:12]} (moved or renamed?): {detail}")
+    return result.stdout
 
 
 def scan(name: str, data: bytes) -> list[str]:
     """Problems that block a sync: hidden Unicode or a red flag in the agent text."""
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return [f"{name}: not valid UTF-8 ({exc.reason} at byte {exc.start})"]
     problems = []
-    for n, line in enumerate(data.decode("utf-8").splitlines(), 1):
+    lines = text.splitlines()
+    for n, line in enumerate(lines, 1):
         if HIDDEN_RE.search(line):
             problems.append(f"{name}:{n}: hidden Unicode character")
+    joined, start = [], 1
+    for n, line in enumerate(lines, 1):
+        joined.append(line[:-1] if line.endswith("\\") else line)
+        if line.endswith("\\") and n < len(lines):
+            continue
+        logical = " ".join(joined)
         for label, pattern in RED_FLAGS.items():
-            if pattern.search(line):
-                problems.append(f"{name}:{n}: {label}")
+            if pattern.search(logical):
+                problems.append(f"{name}:{start}: {label}")
+        joined, start = [], n + 1
     return problems
 
 
@@ -92,7 +120,8 @@ def write_manifest(dest: Path, commit: str) -> None:
     (dest / "VENDORED.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
-def sync(src: Path, commit: str, dest: Path = DEST) -> None:
+def sync(src: Path, commit: str, dest: Path | None = None) -> None:
+    dest = dest or DEST
     blobs = {out: read_blob(src, commit, path) for out, path in FILES.items()}
     problems = scan(FILES["AGENT.md"], blobs["AGENT.md"])
     if problems:
@@ -107,19 +136,35 @@ def sync(src: Path, commit: str, dest: Path = DEST) -> None:
     print(f"{dest.name}: {len(blobs)} files at {commit[:7]}")
 
 
-def check(dest: Path = DEST) -> list[str]:
+def check(dest: Path | None = None) -> list[str]:
+    dest = dest or DEST
     manifest_path = dest / "VENDORED.json"
     if not manifest_path.is_file():
         return [f"{dest.name}: VENDORED.json missing"]
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        files = dict(manifest["files"])
+    except (ValueError, KeyError, TypeError) as exc:
+        return [f"{dest.name}/VENDORED.json: unreadable ({exc!r}); rerun the sync"]
     errors = []
-    for rel, digest in manifest["files"].items():
+    expected = {"upstream": UPSTREAM_REPO, "path": UPSTREAM_PATH, "skill": dest.name, "license": "MIT"}
+    for key, value in expected.items():
+        if manifest.get(key) != value:
+            errors.append(f"{dest.name}/VENDORED.json: {key} is {manifest.get(key)!r}, expected {value!r}")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(manifest.get("commit", ""))):
+        errors.append(f"{dest.name}/VENDORED.json: commit is not a full 40-character commit")
+    if sorted(files) != sorted(FILES):
+        errors.append(f"{dest.name}/VENDORED.json: lists {sorted(files)}, expected {sorted(FILES)}")
+    digest = hashlib.sha256("".join(f"{h}  {f}\n" for f, h in sorted(files.items())).encode()).hexdigest()
+    if manifest.get("digest") != digest:
+        errors.append(f"{dest.name}/VENDORED.json: digest does not match its file hashes")
+    for rel, digest in files.items():
         path = dest / rel
         if not path.is_file():
             errors.append(f"{dest.name}/{rel}: missing")
         elif sha256(path) != digest:
             errors.append(f"{dest.name}/{rel}: changed since sync (the upstream text must stay unmodified)")
-    allowed = set(manifest["files"]) | VSTACK_OWNED | GENERATED
+    allowed = set(files) | VSTACK_OWNED | GENERATED
     for path in dest.rglob("*"):
         rel = path.relative_to(dest).as_posix()
         if path.is_file() and rel not in allowed:
@@ -155,7 +200,11 @@ def main(argv: list[str] | None = None) -> int:
             commit = git("rev-parse", "--verify", f"{args.ref}^{{commit}}", cwd=src)
             sync(src, commit)
         return 0
-    except (SyncError, subprocess.CalledProcessError) as exc:
+    except subprocess.CalledProcessError as exc:
+        detail = exc.stderr.strip() if isinstance(exc.stderr, str) else ""
+        print(f"error: {' '.join(map(str, exc.cmd))} failed ({exc.returncode}){': ' + detail if detail else ''}", file=sys.stderr)
+        return 1
+    except (SyncError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

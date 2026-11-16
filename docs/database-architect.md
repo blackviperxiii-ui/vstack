@@ -40,10 +40,19 @@ installer (`npx claude-code-templates@latest`).
    ```
 
    The sync reads the files with `git cat-file` (nothing is checked out or
-   run). It stops on hidden Unicode (zero-width, bidi-control or tag
-   characters) and on red flags: a download piped to a shell, `curl`/`wget` of
-   a URL, an `npx ...@latest`, a credential path, an instruction override, or
-   text that hides output from the user.
+   run). It stops on hidden Unicode (zero-width, bidi-control, bidi-isolate,
+   soft-hyphen or tag characters) and on red flags:
+   - a download piped to a shell or interpreter, or downloaded code run
+     another way (`bash <(curl ...)`, `curl ... && sh`, `pip install <url>`)
+   - `curl` or `wget` of any URL
+   - an `npx` package with no pinned version
+   - a credential path (`~/.ssh`, `~/.pgpass`, `~/.netrc`, `$HOME/.aws`, ...)
+   - an instruction override, or text that hides output from the user
+   - an HTML comment, which a rendered diff hides from the reviewer
+
+   A command split with a trailing backslash is checked as one line. A hit
+   means a person reads the change; it is not proof the text is safe, so
+   step 2 still applies.
 4. If the hand-offs or safety rules changed, update the wrapper `SKILL.md`
    (keep it under the 400-token cap) and `NOTICE.md`.
 5. Run the full local checks (`AGENTS.md`), add a `CHANGELOG.md` line naming

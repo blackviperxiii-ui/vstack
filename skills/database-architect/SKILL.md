@@ -5,22 +5,22 @@ description: Database schema and migration work. Design tables, write or review 
 
 # Database Architect
 
-Read `AGENT.md` in full and follow it. It is vendored unmodified at a pinned commit (`VENDORED.json`; MIT, see `NOTICE.md`). These rules come first:
+Read `AGENT.md` in full and follow it. It is vendored unmodified at a pinned commit (`VENDORED.json`, MIT, `NOTICE.md`). These rules come first:
 
 **Safety.** Scratch databases only: never production or shared ones. Stop only a server you started, by its data dir (`pg_ctl -D <dir> stop`); never `pkill` or `killall`. Never print or commit credentials. Squawk only pinned (`npx squawk-cli@2.72.0`), never `@latest`.
 
 **Hand-offs.** `AGENT.md` names agents vstack doesn't ship:
-- postgres-pro (query tuning, `EXPLAIN ANALYZE`) → **optimize**
+- postgres-pro (query tuning) → **optimize**
 - backend-developer (ORM and app code) → **architect**
-- security-auditor (PII, compliance) → **qa-walkthrough** security pass
+- security-auditor (PII) → **qa-walkthrough** security pass
 - neon-database-architect → none; use Neon's docs, list what's untested.
 
 **SQLite** (local app storage):
 - `PRAGMA foreign_keys = ON` on every connection; it's off by default.
-- `STRICT` tables; WAL plus `busy_timeout` for one writer and many readers.
+- `STRICT` tables; WAL plus `busy_timeout` for one writer, many readers.
 - Number migrations with `PRAGMA user_version`, one transaction each.
-- No drop-constraint or type change: rebuild (new table, copy, drop, rename) in one transaction, then `PRAGMA foreign_key_check`.
+- No drop-constraint or type change: set `foreign_keys = OFF` outside a transaction, rebuild (new table, copy, drop, rename) inside one, `PRAGMA foreign_key_check`, then ON.
 - No RLS or roles; isolation lives in the app.
-- Prove it on a temp file with `sqlite3 -bail`.
+- Prove it on a temp file: `sqlite3 -bail`.
 
 Resync: `docs/database-architect.md`.

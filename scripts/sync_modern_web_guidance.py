@@ -44,9 +44,10 @@ VSTACK_OWNED = frozenset({"SKILL.md", "NOTICE.md"})
 GENERATED = frozenset({"VENDORED.json", "INDEX.md"})
 ALLOWED_SUFFIXES = frozenset({".md"})
 
-# Zero-width, bidi-control, word-joiner, BOM and tag characters: invisible text
-# that can hide instructions from a human reviewer.
-HIDDEN_RE = re.compile("[​-‏‪-‮⁠-⁤﻿\U000e0000-\U000e007f]")
+# Soft hyphen, Arabic letter mark, Mongolian vowel separator, zero-width,
+# bidi-control and bidi-isolate, word-joiner, BOM and tag characters: invisible
+# text that can hide or reorder instructions for a human reviewer.
+HIDDEN_RE = re.compile("[\u00ad\u061c\u180e\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff\U000e0000-\U000e007f]")
 EXACT_REF_RE = re.compile(r"^(v\d+\.\d+\.\d+|[0-9a-f]{40})$")
 
 
