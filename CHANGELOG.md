@@ -4,6 +4,8 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.5.0
+
 ### Added
 
 - `database-architect`, the Database Architect agent vendored unmodified from [claude-code-templates](https://github.com/davila7/claude-code-templates) at `1530598` (MIT, `LICENSE` and `NOTICE.md` in the folder). A short vstack `SKILL.md` replaces its "MUST BE USED" trigger with a plain one, puts its safety rules first (scratch databases only, stop servers by data directory and never with `pkill`/`killall`, never print credentials, Squawk pinned), maps its hand-offs to `optimize`, `architect` and `qa-walkthrough`, and adds SQLite notes for local app storage. The upstream file is kept as `AGENT.md`.
