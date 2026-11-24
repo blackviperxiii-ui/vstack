@@ -5,7 +5,7 @@ description: AV ship gate. Playback, sync, codecs, devices; ffprobe/ffmpeg; ship
 
 # AV QA Walkthrough
 
-AV ship gate before beta→main or after pipeline/player/codec changes. UI → **qa-walkthrough**. Cite **viper-mode**; no sibling skill growth. **not hand-tested on device** if hardware skipped.
+AV ship gate before beta→main or after pipeline/player/codec changes. UI → **qa-walkthrough**. Cite **viper-mode**. **not hand-tested on device** if hardware skipped.
 
 ## 1. Playback walk
 

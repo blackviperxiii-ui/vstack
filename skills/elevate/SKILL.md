@@ -9,7 +9,7 @@ Improve an app's UI toward spectacular craft. Not **land-it** (diagnose misses) 
 
 **Read `GUIDE.md` in this folder** for checklists (premium tells, motion budget, AI gates, states).
 
-Cite **viper-mode**, **principle-experience-first**, **principle-subtract-before-you-add**, **principle-minimize-reader-load**. Prose: **sharpen**/**unslop**. No sibling skill growth.
+Cite **viper-mode**, **principle-experience-first**, **principle-subtract-before-you-add**, **principle-minimize-reader-load**. Prose: **sharpen**/**unslop**.
 
 ## Playbook
 

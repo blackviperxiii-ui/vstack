@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/blackviperxiii-ui/vstack)](https://github.com/blackviperxiii-ui/vstack/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Token-efficient engineering playbooks, principles, and verification skills for Cursor and coding agents.
+Engineering playbooks, principles, and verification skills that make coding agents get the work right the first time.
 
 ## Table of contents
 
@@ -14,23 +14,23 @@ Token-efficient engineering playbooks, principles, and verification skills for C
 - [Usage](#usage)
 - [Skill catalog](#skill-catalog)
 - [Configuration and architecture](#configuration-and-architecture)
-- [Upstream sync and token budget](#upstream-sync-and-token-budget)
+- [Upstream sync and skill size](#upstream-sync-and-skill-size)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Overview
 
-**Viper Stack (`vstack`)** is a self-contained pack of 53 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or bloated prompts.
+**Viper Stack (`vstack`)** is a self-contained pack of 71 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or on rework.
 
-Instead of defaulting to expensive frontier-model committees, `vstack` defaults parent sessions to **Auto** or **Composer 2.5 Standard**, delegates bulk reads to fresh subagents that inherit the parent model, and enforces strict token budgets on every skill file in CI.
+Instead of defaulting to expensive frontier-model committees, `vstack` defaults parent sessions to **Auto** or **Composer 2.5 Standard**, delegates bulk reads to fresh subagents that inherit the parent model, and ships every skill at full strength, because an agent that follows a complete procedure spends fewer tokens than one that guesses and redoes the work.
 
 ## Features
 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
-- **61 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
+- **71 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), 22 task playbooks under `viper-mode/playbooks/`, and 24 `principle-*` skills.
 - **Multi-agent packaging**: Ships Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)), root Agent Plugins ([`plugin.json`](plugin.json)), and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)) manifests, plus installers for portable `.agents/skills/` and `.grok/skills/` layouts. Cursor Projects: see [`docs/CONSUMING.md`](docs/CONSUMING.md).
-- **CI-enforced token caps**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and blocks unapproved prompt growth on pull requests and branch pushes.
+- **Size reported, never capped**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and shows per-skill deltas on pull requests. No skill is trimmed to fit a budget.
 
 ## Getting started
 
@@ -165,6 +165,11 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - **`ketchup`** and **`ketchup-video`**: Summarizes progress since the user's last message as text or a short subtitled slide video, listing pending decisions (`/ketchup`, `/ketchup-video`).
 - **`technical-writing`** and **`unslop`**: Enforces clear developer prose and strips AI writing tells (`/technical-writing`, `/unslop`).
 - **`typescript-best-practices`**: Applies type-safe TypeScript rules on `.ts` and `.tsx` files.
+- **`no-comments`**: Sends a fresh subagent to delete comments and flag workaround code in a diff before review, then fixes the accepted findings (`/no-comments`).
+- **`automate-me`**: Drafts or refreshes a personal `-mode` skill that captures how the user works, optionally from recent transcripts (`/automate-me`).
+- **`make-bot-ui`**: Builds a custom page or dashboard whose buttons wake a bot over a webhook (`/make-bot-ui`).
+- **`bro`**: Restates the last message in plain language with no jargon (`/bro`).
+- **`vstack-help`**: Explains what vstack offers and which skill or playbook fits a task (`/vstack-help`).
 
 ### Design skills
 
@@ -176,7 +181,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 
 ### Principle skills
 
-19 standalone `principle-*` skills back the rules cited by `viper-mode`, including `principle-prove-it-works`, `principle-fix-root-causes`, `principle-model-the-domain`, `principle-boundary-discipline`, `principle-type-system-discipline`, `principle-sequence-verifiable-units`, `principle-subtract-before-you-add`, and `principle-test-behavior-not-implementation`.
+24 standalone `principle-*` skills back the rules cited by `viper-mode`, including `principle-prove-it-works`, `principle-fix-root-causes`, `principle-model-the-domain`, `principle-boundary-discipline`, `principle-type-system-discipline`, `principle-sequence-verifiable-units`, `principle-subtract-before-you-add`, and `principle-test-behavior-not-implementation`.
 
 ## Configuration and architecture
 
@@ -198,12 +203,12 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 ├── docs/                 # Usage guide, consumer install matrix, and CI policy
 ├── rules/                # Always-applied Cursor rule distributed with the plugin
 ├── scripts/              # Skill linter, token counter/checker, secret & PII guards, installers
-├── skills/               # 61 skill directories (each containing SKILL.md)
+├── skills/               # 71 skill directories (each containing SKILL.md)
 ├── tests/                # Python stdlib unittest suite for repo scripts
 ├── install.sh            # Checksum-verified release installer
 ├── requirements-ci.txt   # CI dependency for token counting (tiktoken==0.14.0)
 ├── tokens.json           # Tracked cl100k_base token and byte counts per skill
-├── UPSTREAM.json         # Upstream pstack sync state, skill mapping, and unported list
+├── UPSTREAM.json         # Upstream pstack sync state and skill mapping
 └── VERSION               # Current release version
 ```
 
@@ -215,20 +220,19 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - [`AGENTS.md`](AGENTS.md): Repository rules, branch workflow, and verification requirements.
 - [`CHANGELOG.md`](CHANGELOG.md): Release notes across versions.
 
-## Upstream sync and token budget
+## Upstream sync and skill size
 
 This repository tracks [`cursor/plugins` (`pstack`)](https://github.com/cursor/plugins/tree/main/pstack) in [`UPSTREAM.json`](UPSTREAM.json) (`last_synced_sha`, `mapping`, `unported`). A daily **Upstream watch** workflow compares `beta` against `last_synced_sha` and opens or updates a single `upstream-sync` issue when upstream drifts (closing it once `beta` catches up). Dependabot checks `requirements-ci.txt` and GitHub Actions weekly.
 
-[`scripts/token_check.py`](scripts/token_check.py) enforces token limits on pull requests and pushes to `main` and `beta` (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+### Skill size is reported, not capped
 
-- Regenerate [`tokens.json`](tokens.json) with `python3 scripts/count_tokens.py` (`tiktoken` `cl100k_base`) and commit it whenever a `SKILL.md` changes. CI fails if `tokens.json` is stale.
-- Existing skills cannot grow relative to the base commit unless:
-  - the PR updates `last_synced_sha` (a sync PR) and each skill's growth ratio stays within its mapped upstream skill's growth ratio plus `5%`, or
-  - the PR carries the `token-growth-approved` label.
-- New **mapped** skills (listed in `UPSTREAM.json` `mapping`) are allowed only on sync PRs and must be `<= 35%` of the upstream skill's token count at the new SHA.
-- New **original** skills (not in `UPSTREAM.json` `mapping`) are allowed on any PR if they stay `<= 400` tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
+Earlier releases capped every ported skill at 35% of its upstream size and every original skill at 400 tokens. The caps trimmed procedure, edge cases and supporting files, and left 10 upstream skills out. A trimmed skill costs more than it saves: the agent guesses, gets it wrong, and redoes the work. The caps are gone.
 
-Currently [`UPSTREAM.json`](UPSTREAM.json) maps 49 ported skills, while 12 skills are `vstack`-original or vendored from other sources (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `elevate`, `optimize`, `bag-and-tag`, `modern-web-guidance`, `chrome-extensions`, `database-architect`). Upstream skills intentionally omitted under the token budget (`automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
+- A skill carries whatever the agent needs to do the job right the first time. Long material goes in the skill's `references/`, `playbooks/` or `scripts/`, which load only when the skill is used.
+- [`scripts/token_check.py`](scripts/token_check.py) fails only when [`tokens.json`](tokens.json) is stale. Regenerate it with `python3 scripts/count_tokens.py` (`tiktoken` `cl100k_base`) whenever a `SKILL.md` changes. On pull requests and pushes it also writes a per-skill size delta table to the job summary, for information.
+- Descriptions stay one line. They are the only part of a skill every session pays for, so they state what the skill does and when to use it and nothing else.
+
+[`UPSTREAM.json`](UPSTREAM.json) maps 59 skills to upstream (every upstream skill is ported; `unported` is empty), while 12 skills are `vstack`-original or vendored from other sources (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `elevate`, `optimize`, `bag-and-tag`, `modern-web-guidance`, `chrome-extensions`, `database-architect`). vstack adapts upstream text for many hosts and keeps its own model defaults (Auto, same-model panels).
 
 ## Contributing
 
@@ -236,7 +240,7 @@ Currently [`UPSTREAM.json`](UPSTREAM.json) maps 49 ported skills, while 12 skill
 
 - **`beta`** is the active integration branch. Open all day-to-day pull requests against `beta`.
 - **`main`** is the stable release branch. Do not target `main` directly unless promoting `beta` for a release.
-- Follow Research-Plan-Execute (RPE), keep prose docs in `docs/` rather than growing `SKILL.md` files, and keep all content free of personal information (see [`AGENTS.md`](AGENTS.md)).
+- Follow Research-Plan-Execute (RPE), keep human-facing prose in `docs/` and agent-facing procedure in the skill, and keep all content free of personal information (see [`AGENTS.md`](AGENTS.md)).
 
 ### Local verification
 

@@ -52,18 +52,17 @@
     "teach": "teach",
     "technical-writing": "technical-writing",
     "typescript-best-practices": "typescript-best-practices",
-    "why": "why"
+    "why": "why",
+    "automate-me": "automate-me",
+    "bro": "bro",
+    "make-bot-ui": "make-bot-ui",
+    "no-comments": "no-comments",
+    "vstack-help": "poteto-help",
+    "principle-encode-lessons-in-structure": "principle-encode-lessons-in-structure",
+    "principle-exhaust-the-design-space": "principle-exhaust-the-design-space",
+    "principle-guard-the-context-window": "principle-guard-the-context-window",
+    "principle-laziness-protocol": "principle-laziness-protocol",
+    "principle-migrate-callers-then-delete-legacy-apis": "principle-migrate-callers-then-delete-legacy-apis"
   },
-  "unported": [
-    "automate-me",
-    "bro",
-    "make-bot-ui",
-    "no-comments",
-    "poteto-help",
-    "principle-encode-lessons-in-structure",
-    "principle-exhaust-the-design-space",
-    "principle-guard-the-context-window",
-    "principle-laziness-protocol",
-    "principle-migrate-callers-then-delete-legacy-apis"
-  ]
+  "unported": []
 }

@@ -5,7 +5,7 @@ description: Ultimate ship check. Walk the real app, review all code, hunt secur
 
 # QA Walkthrough
 
-Last gate before ship: beta→main, big features, or "run a QA walkthrough". Any repo. AV output → **av-qa-walkthrough**. Cite **viper-mode**; no sibling skill growth. Goal: tested, secure, clean, evidence for every claim.
+Last gate before ship: beta→main, big features, or "run a QA walkthrough". Any repo. AV output → **av-qa-walkthrough**. Cite **viper-mode**. Goal: tested, secure, clean, evidence for every claim.
 
 ## 1. App walk
 
