@@ -14,10 +14,6 @@ from unittest import mock
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from _stubs import install_tiktoken_stub  # noqa: E402
-
-install_tiktoken_stub()
-
 import token_check  # noqa: E402
 
 CI_ENV_KEYS = {
@@ -25,8 +21,6 @@ CI_ENV_KEYS = {
     "GITHUB_EVENT_NAME",
     "GITHUB_BASE_SHA",
     "GITHUB_STEP_SUMMARY",
-    "GITHUB_REPOSITORY",
-    "GITHUB_TOKEN",
 }
 
 
@@ -34,22 +28,13 @@ def clean_env() -> dict[str, str]:
     return {k: v for k, v in os.environ.items() if k not in CI_ENV_KEYS}
 
 
-class OriginalSkillCapTest(unittest.TestCase):
-    def test_cap_is_lean(self) -> None:
-        self.assertEqual(token_check.ORIGINAL_SKILL_MAX_TOKENS, 400)
-        self.assertLess(token_check.ORIGINAL_SKILL_MAX_TOKENS, 1000)
-
-
-class GrowthRatioTest(unittest.TestCase):
+class DeltaStatusTest(unittest.TestCase):
     def test_values(self) -> None:
-        self.assertEqual(token_check.growth_ratio(100, 150), 0.5)
-        self.assertEqual(token_check.growth_ratio(200, 100), -0.5)
-        self.assertEqual(token_check.growth_ratio(100, 100), 0.0)
-
-    def test_nonpositive_base(self) -> None:
-        self.assertEqual(token_check.growth_ratio(0, 5), float("inf"))
-        self.assertEqual(token_check.growth_ratio(0, 0), 0.0)
-        self.assertEqual(token_check.growth_ratio(-1, 0), 0.0)
+        self.assertEqual(token_check.delta_status(False, True, 900), "new")
+        self.assertEqual(token_check.delta_status(True, False, -900), "removed")
+        self.assertEqual(token_check.delta_status(True, True, 50), "growth")
+        self.assertEqual(token_check.delta_status(True, True, -50), "shrink")
+        self.assertEqual(token_check.delta_status(True, True, 0), "same")
 
 
 class SkillTokensTest(unittest.TestCase):
@@ -94,23 +79,7 @@ class PrEventTest(unittest.TestCase):
     def test_no_event_path(self) -> None:
         self.use_event(None)
         self.assertEqual(token_check.pr_event(), {})
-        self.assertFalse(token_check.pr_has_label("token-growth-approved"))
         self.assertIsNone(token_check.diff_base_sha())
-
-    def test_label_present_and_absent(self) -> None:
-        self.use_event(
-            {"pull_request": {"labels": [{"name": "bug"}, {"name": "token-growth-approved"}]}}
-        )
-        self.assertTrue(token_check.pr_has_label("token-growth-approved"))
-        self.assertFalse(token_check.pr_has_label("other"))
-
-    def test_label_without_pull_request(self) -> None:
-        self.use_event({"push": {}})
-        self.assertFalse(token_check.pr_has_label("token-growth-approved"))
-
-    def test_label_with_null_labels(self) -> None:
-        self.use_event({"pull_request": {"labels": None}})
-        self.assertFalse(token_check.pr_has_label("x"))
 
     def test_base_sha_from_event(self) -> None:
         self.use_event({"pull_request": {"base": {"sha": "abc123"}}}, {"GITHUB_BASE_SHA": "env456"})
@@ -156,110 +125,71 @@ class WriteSummaryTest(unittest.TestCase):
         path_open.assert_not_called()
 
 
-class SyncPrStateTest(unittest.TestCase):
-    def run_state(self, head: dict | None, base: str | None, base_sha: str | None):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "UPSTREAM.json"
-            if head is not None:
-                path.write_text(json.dumps(head), encoding="utf-8")
-            with (
-                mock.patch.object(token_check, "UPSTREAM_PATH", path),
-                mock.patch.object(token_check, "git_show", return_value=base),
-            ):
-                return token_check.sync_pr_state(base_sha)
-
-    def test_missing_file(self) -> None:
-        self.assertEqual(self.run_state(None, None, "b"), (False, None, None))
-
-    def test_non_string_sha(self) -> None:
-        self.assertEqual(self.run_state({"last_synced_sha": 5}, None, "b"), (False, None, None))
-
-    def test_no_base_counts_as_sync(self) -> None:
-        self.assertEqual(self.run_state({"last_synced_sha": "new"}, None, None), (True, None, "new"))
-        self.assertEqual(self.run_state({"last_synced_sha": "new"}, None, "b"), (True, None, "new"))
-
-    def test_bumped_sha(self) -> None:
-        base = json.dumps({"last_synced_sha": "old"})
-        self.assertEqual(self.run_state({"last_synced_sha": "new"}, base, "b"), (True, "old", "new"))
-
-    def test_unchanged_sha(self) -> None:
-        base = json.dumps({"last_synced_sha": "same"})
-        self.assertEqual(self.run_state({"last_synced_sha": "same"}, base, "b"), (False, None, None))
-
-
 class MainByEventTest(unittest.TestCase):
-    """main() on push and schedule runs, where the PR payload is absent.
-
-    Push runs used to compare against an empty base, so every skill counted as
-    new and any original skill over the cap failed every beta push and nightly.
-    """
+    """main() fails only on a stale tokens.json. Size never fails a run."""
 
     BASE = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 600, "bytes": 1}}}
-    UPSTREAM = {"last_synced_sha": "up1", "mapping": {}}
 
-    def run_main(self, event: dict, name: str, head: dict, pr_labels: list[str] | None = None):
+    def run_main(self, event: dict, name: str, head: dict, committed: dict | None = None):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         event_path = Path(tmp.name) / "event.json"
         event_path.write_text(json.dumps(event), encoding="utf-8")
         tokens_path = Path(tmp.name) / "tokens.json"
-        tokens_path.write_text(json.dumps(head), encoding="utf-8")
-        upstream_path = Path(tmp.name) / "UPSTREAM.json"
-        upstream_path.write_text(json.dumps(self.UPSTREAM), encoding="utf-8")
+        tokens_path.write_text(json.dumps(committed or head), encoding="utf-8")
+        summary_path = Path(tmp.name) / "summary.md"
         env = clean_env()
         env.update(
             {
                 "GITHUB_EVENT_PATH": str(event_path),
                 "GITHUB_EVENT_NAME": name,
-                "GITHUB_REPOSITORY": "o/r",
+                "GITHUB_STEP_SUMMARY": str(summary_path),
             }
         )
-        base_files = {"tokens.json": json.dumps(self.BASE), "UPSTREAM.json": json.dumps(self.UPSTREAM)}
-        pulls = [{"labels": [{"name": n} for n in pr_labels or []]}]
+        base_files = {"tokens.json": json.dumps(self.BASE)}
         with (
             mock.patch.dict(os.environ, env, clear=True),
             mock.patch.object(token_check, "TOKENS_PATH", tokens_path),
-            mock.patch.object(token_check, "UPSTREAM_PATH", upstream_path),
             mock.patch.object(token_check, "run_count_tokens", return_value=head),
             mock.patch.object(token_check, "commit_exists", return_value=True),
             mock.patch.object(token_check, "git_show", side_effect=lambda ref, path: base_files.get(path)),
-            mock.patch.object(token_check, "github_api", return_value=pulls) as api,
-            mock.patch.object(token_check, "count_upstream_tokens") as upstream,
             mock.patch("sys.stderr"),
             mock.patch("sys.stdout"),
         ):
             code = token_check.main()
-        upstream.assert_not_called()
-        return code, api
+        summary = summary_path.read_text(encoding="utf-8") if summary_path.is_file() else ""
+        return code, summary
 
     def test_push_without_changes_passes(self) -> None:
-        code, api = self.run_main({"before": "b1", "after": "a1"}, "push", self.BASE)
+        code, summary = self.run_main({"before": "b1", "after": "a1"}, "push", self.BASE)
         self.assertEqual(code, 0)
-        api.assert_not_called()
+        self.assertIn("| `big-original` | 600 | 600 | +0 | same |", summary)
 
     def test_schedule_checks_staleness_only(self) -> None:
-        code, _ = self.run_main({}, "schedule", self.BASE)
+        code, summary = self.run_main({}, "schedule", self.BASE)
         self.assertEqual(code, 0)
+        self.assertEqual(summary, "")
 
-    def test_push_growth_still_fails_without_label(self) -> None:
-        head = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 650, "bytes": 1}}}
-        code, api = self.run_main({"before": "b1", "after": "a1"}, "push", head)
-        self.assertEqual(code, 1)
-        api.assert_called_once_with("/repos/o/r/commits/a1/pulls")
-
-    def test_push_growth_passes_with_merged_pr_label(self) -> None:
-        head = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 650, "bytes": 1}}}
-        code, _ = self.run_main(
-            {"before": "b1", "after": "a1"}, "push", head, pr_labels=["token-growth-approved"]
-        )
+    def test_growth_is_reported_not_failed(self) -> None:
+        head = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 6500, "bytes": 1}}}
+        code, summary = self.run_main({"before": "b1", "after": "a1"}, "push", head)
         self.assertEqual(code, 0)
+        self.assertIn("| `big-original` | 600 | 6500 | +5900 | growth |", summary)
 
-    def test_new_original_over_cap_still_fails_on_push(self) -> None:
+    def test_new_skill_of_any_size_passes(self) -> None:
         head = {
             "encoding": "cl100k_base",
-            "skills": {**self.BASE["skills"], "fresh": {"tokens": 401, "bytes": 1}},
+            "skills": {**self.BASE["skills"], "fresh": {"tokens": 4001, "bytes": 1}},
         }
-        code, _ = self.run_main({"before": "b1", "after": "a1"}, "push", head)
+        code, summary = self.run_main(
+            {"pull_request": {"base": {"sha": "b1"}}}, "pull_request", head
+        )
+        self.assertEqual(code, 0)
+        self.assertIn("| `fresh` | 0 | 4001 | +4001 | new |", summary)
+
+    def test_stale_tokens_json_fails(self) -> None:
+        head = {"encoding": "cl100k_base", "skills": {"big-original": {"tokens": 650, "bytes": 1}}}
+        code, _ = self.run_main({"before": "b1", "after": "a1"}, "push", head, committed=self.BASE)
         self.assertEqual(code, 1)
 
 

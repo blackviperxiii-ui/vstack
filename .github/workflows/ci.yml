@@ -5,7 +5,7 @@ on:
     branches: [main, beta]
   pull_request:
     branches: [main, beta]
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
   merge_group:
   # Nightly full run (3:25 AM Central during CDT).
@@ -23,7 +23,8 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/beta') }}
 
-# PRs run lint (skill lint, secret check, unit tests) and token-check. Each is
+# PRs run lint (skill lint, secret check, unit tests) and token-check (a
+# freshness check on tokens.json plus a size report, with no size limits). Each is
 # gated by a job-level `if:` on the `changes` output, never a workflow-level
 # path filter, so a skipped required check still reports as passed. Push,
 # manual and merge_group runs always run both; the nightly runs both unless
@@ -105,7 +106,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-ci.txt
-      # The token lets push runs read the merged PR's labels.
+      # Fails only on a stale tokens.json. The per-skill delta table in the
+      # job summary is informational; skill size is never capped.
       - run: python scripts/token_check.py
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
