@@ -43,7 +43,6 @@ If someone does run the CLI, pin `modern-web-guidance@1.0.0` and set
    characters). Scripts are skipped and listed under `skipped` in
    `VENDORED.json`.
 4. If upstream changed its workflow (new CLI flags, new guide id format), update
-   the vstack `SKILL.md` wrapper to match, keeping it offline and under the
-   400-token cap. Update `NOTICE.md` if the list of local changes changed.
+   the vstack `SKILL.md` wrapper to match, keeping it offline. Update `NOTICE.md` if the list of local changes changed.
 5. Run the full local checks (`AGENTS.md`), add a `CHANGELOG.md` line naming the
    new tag and commit, and open a PR into `beta`.

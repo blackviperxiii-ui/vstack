@@ -5,7 +5,7 @@ description: Whole-app feel dive. Find where UX, interactivity, QoL, and code mi
 
 # Land It
 
-Product-feel diagnosis when the app "almost" works but never quite lands. Not a ship gate (**qa-walkthrough**). Cite **viper-mode**, **principle-experience-first**; polish via **sharpen**/**unslop**. No sibling skill growth.
+Product-feel diagnosis when the app "almost" works but never quite lands. Not a ship gate (**qa-walkthrough**). Cite **viper-mode**, **principle-experience-first**; polish via **sharpen**/**unslop**.
 
 ## 1. Whole-app dive
 
