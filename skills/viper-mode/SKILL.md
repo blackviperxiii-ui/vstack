@@ -29,7 +29,7 @@ Rigor: nontrivial code, architecture, ambiguous forks, data modeling, multi-step
 
 **Verification.** Prove It Works: verify the real artifact, not just compile. Fix Root Causes: first wrong decision; guard only for legitimate state. Sequence Work into Verifiable Units: small checkable steps. Test Behavior, Not Implementation: assert observable results.
 
-**Delegation & Efficiency.** Guard the Context Window: bulk to subagents; parent summaries only. Auto / inherit-parent subagents (fresh; owner reviews); parent Auto or Composer 2.5 Standard (Fast off). Single-model sequential panels; multi-model only on explicit high-stakes ask; medium/small reasoning budget, match effort.
+**Delegation & Efficiency.** Guard the Context Window: bulk to subagents; parent summaries only. Auto / inherit-parent (fresh; owner reviews); parent Auto or Composer 2.5 Standard (Fast off). Single-model panels; multi-model only on high-stakes ask; medium/small budget.
 
 **Meta.** Encode Lessons in Structure: repeated patterns → rules or scripts.
 
@@ -41,9 +41,7 @@ Else: short auditable procedure, then follow it.
 
 ## Subagents
 
-`/viper-mode` runs playbooks and spawns delegates; never delegate the whole playbook (nested agents lack Task).
-
-For code/exploration: brief scope, success criteria, principles. Sequential unless independent and large.
+Runs playbooks; never delegate the whole playbook (nested lack Task). Kickoff line 1: `Read <this-dir-abs>/worker.md before anything else.` Code/exploration: brief scope, success criteria, principles. Sequential unless independent and large.
 
 ## Writing
 
