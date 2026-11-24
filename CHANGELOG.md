@@ -4,6 +4,10 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Fixed
+
+- `scripts/package_release.sh` packages only the files tracked at `HEAD` (`git archive`). It used to copy the working tree, so release archives from 1.2.0 to 1.5.0 carried `__pycache__` folders, and compiled Python files embed the build machine's absolute path.
+
 ## 1.5.0
 
 ### Added
