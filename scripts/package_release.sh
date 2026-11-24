@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build dist/vstack-<version>.tar.gz and .zip plus SHA256SUMS from the working tree.
+# Build dist/vstack-<version>.tar.gz and .zip plus SHA256SUMS from the files tracked at HEAD.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,11 +16,13 @@ for manifest in plugin.json .claude-plugin/plugin.json .cursor-plugin/plugin.jso
 	fi
 done
 
-mkdir -p "$stage/$name"
-for path in skills rules assets docs .claude-plugin .cursor-plugin scripts \
-	plugin.json README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md; do
-	cp -R "$root/$path" "$stage/$name/"
-done
+# Package tracked files at HEAD only. Copying the working tree shipped
+# untracked build output (__pycache__, node_modules) in earlier releases, and
+# compiled Python files embed the absolute path of the machine that built them.
+git -C "$root" archive --format=tar --prefix="$name/" HEAD -- \
+	skills rules assets docs .claude-plugin .cursor-plugin scripts \
+	plugin.json README.md LICENSE CHANGELOG.md VERSION install.sh AGENTS.md CLAUDE.md \
+	| tar -C "$stage" -xf -
 
 rm -rf "$out"
 mkdir -p "$out"
