@@ -4,8 +4,17 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Changed
+
+- `in-your-own-words` has a description that says when to use it (it was the single word "Goals.").
+- `lint_skills.py` fails when a skill's frontmatter `name` differs from its folder name.
+- `check_secrets.py` skips `node_modules` and `dist`, which are untracked build output.
+- Every workflow pins its actions to a commit, as `claude.yml` already did.
+- The root and Cursor plugin descriptions no longer say the skills are for Cursor agents only.
+
 ### Fixed
 
+- `install.sh` and `scripts/install_for.sh` name the option when its value is missing, where they used to stop with "unbound variable".
 - `scripts/package_release.sh` packages only the files tracked at `HEAD` (`git archive`). It used to copy the working tree, so release archives from 1.2.0 to 1.5.0 carried `__pycache__` folders, and compiled Python files embed the build machine's absolute path.
 
 ## 1.5.0

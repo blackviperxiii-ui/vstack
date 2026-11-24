@@ -102,6 +102,8 @@ class IterTextFilesTest(unittest.TestCase):
                 ".github/ci.yml",
                 ".git/config",
                 "sub/__pycache__/c.py",
+                "pkg/node_modules/dep/index.js",
+                "dist/bundle.txt",
                 "check_secrets.py",
                 "pic.png",
                 "mod.pyc",

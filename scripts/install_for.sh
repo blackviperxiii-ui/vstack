@@ -28,6 +28,9 @@ usage() {
 
 while [ $# -gt 0 ]; do
 	case "$1" in
+		--host|--project|--mode|--skill) [ $# -ge 2 ] || { echo "$1 needs a value" >&2; exit 1; } ;;
+	esac
+	case "$1" in
 		--host) host="$2"; shift 2 ;;
 		--project) project="$2"; shift 2 ;;
 		--global) global=1; shift ;;

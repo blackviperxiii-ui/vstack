@@ -33,6 +33,25 @@ class InstallForTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--host is required", result.stderr)
 
+    def test_option_without_value_is_named(self) -> None:
+        for option in ("--host", "--project", "--mode", "--skill"):
+            with self.subTest(option=option):
+                result = run_install(option)
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stderr.strip(), f"{option} needs a value")
+
+    def test_release_installer_option_without_value_is_named(self) -> None:
+        for option in ("--target", "--version", "--dir"):
+            with self.subTest(option=option):
+                result = subprocess.run(
+                    ["bash", str(REPO_ROOT / "install.sh"), option],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stderr.strip(), f"{option} needs a value")
+
     def test_unknown_host(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             result = run_install("--host", "not-a-host", "--project", tmp)
