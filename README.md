@@ -136,6 +136,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - **`setup-vstack`**: Detects the coding agent, installs via marketplace/plugin or `install_for.sh`, ensures the consumer pointer, and (Cursor only) writes the Auto / Composer model rule (`/setup-vstack`).
 - **`in-your-own-words`**: Restates the user's goal, problem, and smallest change before substantial edits (`/in-your-own-words`).
 - **`sharpen`**: Deepens a task without enlarging scope, then rewrites the prompt (`/sharpen`).
+- **`reframe`**: Teaches expert terms and neighboring-field analogies, then rewrites the task description (`/reframe`).
 - **`how`** and **`why`**: Explains how a subsystem works or why it is shaped that way with cited code and git evidence (`/how`, `/why`).
 - **`teach`**: Builds a plain-language explanation from `how` and `why` at the reader's pace (`/teach`).
 - **`recall`**: Reconstructs recent working context into a current-state brief (`/recall`).
@@ -196,7 +197,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 ├── docs/                 # Usage guide, consumer install matrix, and CI policy
 ├── rules/                # Always-applied Cursor rule distributed with the plugin
 ├── scripts/              # Skill linter, token counter/checker, secret & PII guards, installers
-├── skills/               # 53 skill directories (each containing SKILL.md)
+├── skills/               # 54 skill directories (each containing SKILL.md)
 ├── tests/                # Python stdlib unittest suite for repo scripts
 ├── install.sh            # Checksum-verified release installer
 ├── requirements-ci.txt   # CI dependency for token counting (tiktoken==0.14.0)

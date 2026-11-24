@@ -11,6 +11,7 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 - `check_secrets.py` skips `node_modules` and `dist`, which are untracked build output.
 - Every workflow pins its actions to a commit, as `claude.yml` already did.
 - The root and Cursor plugin descriptions no longer say the skills are for Cursor agents only.
+- Port pstack 0.15.48 small updates: add `/reframe` and `viper-mode/worker.md`; fold sharpen prototype/preference line; no-subagent `reflect`; fold why author/inference/gap wording (keep multi-source hunt); pin `UPSTREAM.json` to `9e278fe`.
 
 ### Fixed
 

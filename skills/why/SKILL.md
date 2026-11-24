@@ -5,7 +5,7 @@ description: Why does X work this way? Design rationale, regressions, postmortem
 
 # Why
 
-Find the forces that shaped the code. Careful, honest investigator: keep what you know apart from what you infer.
+Answer from the record, not just the code: commits and PRs that introduced the target and later changes, plus other sources when thin. Cite authors, mark inferences, say what the record does not answer.
 
 ## 1. Target and question
 
@@ -17,13 +17,13 @@ Paths + line ranges, key symbols, `git blame -L`, `git log --follow -p`, `git lo
 
 ## 3. Investigators (parallel, one source each)
 
-List available MCPs; map each to one category: source control (always), issue tracker, long-form docs, team chat, observability, error tracking, analytics warehouse. One investigator per category with a source; agent mode, not readonly (readonly strips MCP), but write nothing. Model per `vstack-models.mdc` `why` line (default `auto`). Defensive code (retries, timeouts, null guards, flags) → also hunt incidents and postmortems.
+List MCPs; one investigator per category with a source: source control (always), issue tracker, long-form docs, team chat, observability, error tracking, analytics warehouse. Agent mode, not readonly (readonly strips MCP); write nothing. Model per `vstack-models.mdc` `why` line (default `auto`). Defensive code → also hunt incidents and postmortems.
 
-Skip a category only in writing: no MCP for it (a gap, not a choice), or provably irrelevant. Answer inline only when the PR already holds the full answer and you say so. Null results are findings.
+Skip a category only in writing: no MCP (a gap), or irrelevant. Answer inline only when the PR already holds the full answer and you say so. Nulls are findings.
 
 ## 4. Synthesize
 
-One synthesizer: findings, nulls, skips, anchor, question. Separate confidence levels:
+One synthesizer: findings, nulls, skips, anchor, question.
 
 - **Found** — cited fact (commit, PR, ticket, message).
 - **Inferred** — reasoned from facts; say from which.
@@ -32,6 +32,6 @@ One synthesizer: findings, nulls, skips, anchor, question. Separate confidence l
 
 ## Output
 
-The Question, The Code, What We Found, What We Can Infer, Competing Hypotheses, What We Don't Know, Sources Consulted (one line per category, empty and skipped included, with reason), Confidence Summary. Present it without rewriting the confidence language. If the question precedes a change, end with Preserve / Change / Avoid / Risk.
+The Question, The Code, What We Found, What We Can Infer, Competing Hypotheses, What We Don't Know, Sources Consulted (one line per category, empty/skipped with reason), Confidence Summary. Keep confidence language. Before a change, end with Preserve / Change / Avoid / Risk.
 
 Avoid recency bias: the latest commit is rarely the whole story. Trace back.
