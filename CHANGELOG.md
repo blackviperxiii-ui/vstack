@@ -4,14 +4,20 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Added
+
+- `arena`, a token-efficient port of pstack's design race: frame with a hidden rubric, fan out candidates, judge, pick a base, graft, verify. Candidates run on the parent model (`auto`) by default; other models and a cross-vendor judge only on a high-stakes ask. 371 tokens, 35% of upstream.
+
 ### Changed
+
+- `architect` routes large or contested designs to `arena` (no token growth; the parallel-sketch clause moved there).
 
 - `in-your-own-words` has a description that says when to use it (it was the single word "Goals.").
 - `lint_skills.py` fails when a skill's frontmatter `name` differs from its folder name.
 - `check_secrets.py` skips `node_modules` and `dist`, which are untracked build output.
 - Every workflow pins its actions to a commit, as `claude.yml` already did.
 - The root and Cursor plugin descriptions no longer say the skills are for Cursor agents only.
-- Port pstack 0.15.48 small updates: add `/reframe` and `viper-mode/worker.md`; fold sharpen prototype/preference line; no-subagent `reflect`; fold why author/inference/gap wording (keep multi-source hunt); pin `UPSTREAM.json` to `9e278fe`.
+- Port pstack 0.15.48 small updates: add a compressed `/reframe` (35% of upstream) and `viper-mode/worker.md`; fold sharpen prototype/preference line; no-subagent `reflect`; fold why author/inference/gap wording (keep multi-source hunt); pin `UPSTREAM.json` to `9e278fe`.
 
 ### Fixed
 

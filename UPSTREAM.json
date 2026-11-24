@@ -19,6 +19,7 @@
     "ketchup-video": "ketchup-video",
     "statechart": "statechart",
     "architect": "architect",
+    "arena": "arena",
     "benchmark-checklist": "benchmark-checklist",
     "blast-radius": "blast-radius",
     "correct": "correct",
@@ -54,7 +55,6 @@
     "why": "why"
   },
   "unported": [
-    "arena",
     "automate-me",
     "bro",
     "make-bot-ui",

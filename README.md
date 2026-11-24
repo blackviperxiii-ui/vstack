@@ -28,7 +28,7 @@ Instead of defaulting to expensive frontier-model committees, `vstack` defaults 
 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
-- **59 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
+- **61 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), and 19 `principle-*` skills.
 - **Multi-agent packaging**: Ships Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)), root Agent Plugins ([`plugin.json`](plugin.json)), and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)) manifests, plus installers for portable `.agents/skills/` and `.grok/skills/` layouts. Cursor Projects: see [`docs/CONSUMING.md`](docs/CONSUMING.md).
 - **CI-enforced token caps**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and blocks unapproved prompt growth on pull requests and branch pushes.
 
@@ -141,6 +141,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - **`teach`**: Builds a plain-language explanation from `how` and `why` at the reader's pace (`/teach`).
 - **`recall`**: Reconstructs recent working context into a current-state brief (`/recall`).
 - **`architect`**: Sketches data types and module boundaries before writing implementation code (`/architect`).
+- **`arena`**: Races several candidates at one large or contested design, picks a base, and grafts the best parts of the rest into it (`/arena`). `architect` routes to it.
 - **`statechart`**: Models system transitions and bug paths as reader-facing Mermaid statecharts (`/statechart`).
 - **`figure-it-out`**: Designs a short, auditable playbook when no standard playbook fits (`/figure-it-out`).
 - **`follow-through`**: Maintains a task ledger with check-ins, stall detection, and proven completion (`/follow-through`).
@@ -197,7 +198,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 ├── docs/                 # Usage guide, consumer install matrix, and CI policy
 ├── rules/                # Always-applied Cursor rule distributed with the plugin
 ├── scripts/              # Skill linter, token counter/checker, secret & PII guards, installers
-├── skills/               # 54 skill directories (each containing SKILL.md)
+├── skills/               # 61 skill directories (each containing SKILL.md)
 ├── tests/                # Python stdlib unittest suite for repo scripts
 ├── install.sh            # Checksum-verified release installer
 ├── requirements-ci.txt   # CI dependency for token counting (tiktoken==0.14.0)
@@ -227,7 +228,7 @@ This repository tracks [`cursor/plugins` (`pstack`)](https://github.com/cursor/p
 - New **mapped** skills (listed in `UPSTREAM.json` `mapping`) are allowed only on sync PRs and must be `<= 35%` of the upstream skill's token count at the new SHA.
 - New **original** skills (not in `UPSTREAM.json` `mapping`) are allowed on any PR if they stay `<= 400` tokens (`ORIGINAL_SKILL_MAX_TOKENS`).
 
-Currently [`UPSTREAM.json`](UPSTREAM.json) maps 47 ported skills, while 12 skills are `vstack`-original or vendored from other sources (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `elevate`, `optimize`, `bag-and-tag`, `modern-web-guidance`, `chrome-extensions`, `database-architect`). Upstream skills intentionally omitted under the token budget (`arena`, `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
+Currently [`UPSTREAM.json`](UPSTREAM.json) maps 49 ported skills, while 12 skills are `vstack`-original or vendored from other sources (`qa-walkthrough`, `av-qa-walkthrough`, `follow-through`, `updater`, `stageshow`, `land-it`, `elevate`, `optimize`, `bag-and-tag`, `modern-web-guidance`, `chrome-extensions`, `database-architect`). Upstream skills intentionally omitted under the token budget (`automate-me`, `bro`, `make-bot-ui`, `no-comments`, `poteto-help`, and 5 `principle-*` entries) remain listed in `UPSTREAM.json` under `unported`.
 
 ## Contributing
 

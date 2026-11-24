@@ -9,7 +9,7 @@ Todo: Ground, Sketch, Agree, Implement, Scrap.
 
 **A. Ground.** Run **how** on every touched subsystem; naming a file isn't grounding. Ownership or layering changes → **why** too. Skip only for greenfield.
 
-**B. Sketch.** Caller usage first, then types, signatures, module map, `not implemented` bodies, pseudocode, schemas (**database-architect**). Design it twice: two whole-shape alternatives, sequential by default; parallel per `architect` line only on high-stakes ask. Right repo-wide, not only locally? Prefer the deeper interface: more hidden, smaller surface. Synthesize one; record why.
+**B. Sketch.** Caller usage first, then types, signatures, module map, `not implemented` bodies, pseudocode, schemas (**database-architect**). Design it twice: two whole-shape alternatives, sequential; large or contested → **arena**. Right repo-wide, not only locally? Prefer the deeper interface: more hidden, smaller surface. Synthesize one; record why.
 
 **C. Agree.** Default proceed; pause only if asked. Sketch can land as a scaffold commit (**principle-foundational-thinking**). Pressure-test with **interrogate**. Shape pushback → redo B.
 
