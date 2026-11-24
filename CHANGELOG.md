@@ -4,6 +4,10 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+### Changed
+
+- Port pstack 0.15.48 small updates: add `/reframe` and `viper-mode/worker.md`; fold sharpen prototype/preference line; no-subagent `reflect`; fold why author/inference/gap wording (keep multi-source hunt); pin `UPSTREAM.json` to `9e278fe`.
+
 ## 1.5.0
 
 ### Added
