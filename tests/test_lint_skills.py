@@ -191,6 +191,21 @@ class LintSkillsMainTest(TempDirTestCase):
             self.assertEqual(lint_skills.main(), 0)
         self.assertIn("lint OK", out.getvalue())
 
+    def test_main_fails_when_name_differs_from_folder(self) -> None:
+        skill = self.tmp / "skills" / "demo"
+        skill.mkdir(parents=True)
+        skill.joinpath("SKILL.md").write_text(
+            "---\nname: other\ndescription: ok\n---\n\n# x\n", encoding="utf-8"
+        )
+        upstream = self.write("UPSTREAM.json", json.dumps(LintUpstreamTest.VALID))
+        with (
+            mock.patch.object(lint_skills, "SKILLS_DIR", self.tmp / "skills"),
+            mock.patch.object(lint_skills, "UPSTREAM_PATH", upstream),
+            mock.patch("sys.stderr", new_callable=io.StringIO) as err,
+        ):
+            self.assertEqual(lint_skills.main(), 1)
+        self.assertIn("must match folder 'demo'", err.getvalue())
+
     def test_main_returns_one_on_errors(self) -> None:
         with (
             mock.patch.object(lint_skills, "SKILLS_DIR", self.tmp / "nope"),

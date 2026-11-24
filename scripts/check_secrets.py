@@ -9,7 +9,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCAN_ROOTS = (REPO_ROOT / "skills", REPO_ROOT / "scripts", REPO_ROOT)
-SKIP_DIRS = {".git", "__pycache__"}
+# node_modules and dist are untracked build output (see .gitignore).
+SKIP_DIRS = {".git", "__pycache__", "node_modules", "dist"}
 SKIP_FILES = {"check_secrets.py"}
 
 PATTERNS: list[tuple[str, re.Pattern[str]]] = [
