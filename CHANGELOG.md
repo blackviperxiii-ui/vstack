@@ -4,6 +4,16 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.8.0
+
+### Added
+
+- `lean-tests`: makes a test suite and its CI jobs faster without losing coverage. Measure first, push proof down the ladder, keep budgets, change one round at a time, and report before and after times. Adapted from Marek Kirejczyk's MIT `refactor-tests` skill.
+
+### Fixed
+
+- The README intro says 73 skills, matching the skill list.
+
 ## 1.7.0
 
 ### Added

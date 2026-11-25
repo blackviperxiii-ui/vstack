@@ -1,0 +1,90 @@
+name: auto-merge
+# Squash auto-merge for PRs into beta unless held. Never checks out PR code;
+# required status checks still gate the actual merge.
+# pull_request, not pull_request_target: pull_request_target only runs from the
+# default branch (main), so this file never fired while it lived on beta alone.
+# Fork PRs are skipped by the job's same-repo check.
+# AUTO_MERGE_TOKEN (optional, fine-grained, contents + pull requests write) makes
+# the merge count as a push that starts beta workflows; github.token merges
+# don't start them.
+on:
+  pull_request:
+    types: [opened, ready_for_review, synchronize, labeled, unlabeled, reopened]
+    branches: [beta]
+  pull_request_review:
+    types: [submitted, dismissed]
+  # CI's last job calls this once the PR's gate finished, so a PR that was
+  # already green when auto-merge was asked for still merges.
+  workflow_call:
+permissions: {}
+concurrency:
+  group: auto-merge-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  # Never cancel in-flight runs.
+  cancel-in-progress: false
+jobs:
+  auto-merge:
+    # Bot reviews only comment; their runs need approval and fail.
+    if: >-
+      github.event.pull_request.base.ref == 'beta' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (github.event_name != 'pull_request_review' || github.event.review.user.type != 'Bot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.AUTO_MERGE_TOKEN || github.token }}
+          script: |
+            const HOLD = ['hold', 'needs-human-review', 'needs-windows-shots', 'visual'];
+            const { owner, repo } = context.repo;
+            const number = context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: number });
+            const disable = async (why) => {
+              core.info('disable: ' + why);
+              if (!pr.auto_merge) return;
+              await github.graphql('mutation($id:ID!){disablePullRequestAutoMerge(input:{pullRequestId:$id}){clientMutationId}}', { id: pr.node_id });
+            };
+            if (pr.state !== 'open' || pr.base.ref !== 'beta') return core.info('not an open beta PR');
+            if (pr.draft) return disable('draft');
+            const held = pr.labels.map(l => l.name).filter(n => HOLD.includes(n));
+            if (held.length) return disable('hold label: ' + held.join(','));
+            const reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: number });
+            const latest = {};
+            for (const r of reviews) {
+              const who = r.user?.login || '';
+              if (r.state === 'COMMENTED' || r.state === 'PENDING') continue;
+              if (who === owner || /copilot/i.test(who)) latest[who] = r.state;
+            }
+            if (Object.values(latest).includes('CHANGES_REQUESTED')) return disable('changes requested');
+            const body = (pr.body || '').split(/\r?\n/)
+              .filter(l => !/^\s*(co-authored-by|signed-off-by|reviewed-by|acked-by|tested-by|helped-by|suggested-by|reported-by)\s*:/i.test(l))
+              // Agent attribution lines (requester name, session links) stay in the
+              // PR, not in beta's history.
+              .filter(l => !/^\s*(_Requested by\b|<!--.*-->\s*$)/.test(l) && !/claude\.ai\/code\//.test(l))
+              .join('\n').replace(/\n{3,}/g, '\n\n').trim();
+            const title = `${pr.title} (#${number})`;
+            try {
+              await github.graphql(`mutation($id:ID!,$head:GitObjectID!,$title:String!,$body:String!){
+                enablePullRequestAutoMerge(input:{pullRequestId:$id,mergeMethod:SQUASH,expectedHeadOid:$head,commitHeadline:$title,commitBody:$body}){clientMutationId}}`,
+                { id: pr.node_id, head: pr.head.sha, title, body });
+              return core.info('squash auto-merge enabled');
+            } catch (e) {
+              // GitHub refuses auto-merge on a PR that can already merge
+              // (clean) or whose only open items are non-required checks
+              // (unstable). Merge it here only when every other check on the
+              // head commit finished green.
+              if (!/(clean|unstable) status/i.test(e.message || '')) throw e;
+              core.info('auto-merge refused: ' + e.message);
+            }
+            const runs = await github.paginate(github.rest.checks.listForRef, { owner, repo, ref: pr.head.sha, per_page: 100 });
+            const others = runs.filter(r => !/auto-merge/i.test(r.name));
+            const waiting = others.filter(r => r.status !== 'completed').map(r => r.name);
+            const red = others.filter(r => r.status === 'completed' && !['success', 'skipped', 'neutral'].includes(r.conclusion)).map(r => r.name);
+            const { data: st } = await github.rest.repos.getCombinedStatusForRef({ owner, repo, ref: pr.head.sha });
+            if (red.length || st.state === 'failure' || st.state === 'error') return core.info('not merging, red: ' + red.join(', ') + ' status=' + st.state);
+            if (waiting.length || (st.total_count && st.state === 'pending')) return core.info('not merging yet, waiting on: ' + waiting.join(', '));
+            await github.rest.pulls.merge({ owner, repo, pull_number: number, merge_method: 'squash', sha: pr.head.sha, commit_title: title, commit_message: body });
+            core.info('squash merged (already green)');
