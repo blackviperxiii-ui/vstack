@@ -11,6 +11,7 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 - `viper-mode` regains its full principle index (when each principle applies), the Autonomy rules and routing to every skill, and ships 22 task playbooks under `playbooks/`, the review-bot triage reference and the PR-watch and worktree-audit scripts.
 - `statechart` ships its rendering and model-checking scripts. `create-verification-skill`, `show-me-your-work` and `typescript-best-practices` ship their references and scripts.
 - vstack keeps its own model defaults: subagents inherit the parent model, and panels use one model unless the user asks for a multi-model pass.
+- The vstack-original skills written under the old 400-token cap are expanded into full procedure: `qa-walkthrough`, `av-qa-walkthrough`, `land-it` and `follow-through` gain setup steps, what to check in each pass, severity definitions, evidence rules and stop conditions, and the `optimize` and `elevate` playbooks spell out each step. Every existing rule is kept.
 
 ### Added
 
