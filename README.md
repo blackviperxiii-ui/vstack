@@ -20,7 +20,7 @@ Engineering playbooks, principles, and verification skills that make coding agen
 
 ## Overview
 
-**Viper Stack (`vstack`)** is a self-contained pack of 71 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or on rework.
+**Viper Stack (`vstack`)** is a self-contained pack of 72 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or on rework.
 
 Instead of defaulting to expensive frontier-model committees, `vstack` defaults parent sessions to **Auto** or **Composer 2.5 Standard**, delegates bulk reads to fresh subagents that inherit the parent model, and ships every skill at full strength, because an agent that follows a complete procedure spends fewer tokens than one that guesses and redoes the work.
 
@@ -28,7 +28,7 @@ Instead of defaulting to expensive frontier-model committees, `vstack` defaults 
 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
-- **71 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), dependency and surface maintenance (`updater`), 22 task playbooks under `viper-mode/playbooks/`, and 24 `principle-*` skills.
+- **72 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), CI speed and cost (`lean-ci`), dependency and surface maintenance (`updater`), 22 task playbooks under `viper-mode/playbooks/`, and 24 `principle-*` skills.
 - **Multi-agent packaging**: Ships Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)), root Agent Plugins ([`plugin.json`](plugin.json)), and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)) manifests, plus installers for portable `.agents/skills/` and `.grok/skills/` layouts. Cursor Projects: see [`docs/CONSUMING.md`](docs/CONSUMING.md).
 - **Size reported, never capped**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and shows per-skill deltas on pull requests. No skill is trimmed to fit a budget.
 
@@ -153,6 +153,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - **`elevate`**: Raises UI craft toward premium, modern, fluid feel — hierarchy, type, color, space, motion, states, anti-slop (`/elevate`).
 - **`optimize`**: Measures real artifacts, finds hot spots, fixes root causes, and remeasures app performance (`/optimize`).
 - **`bag-and-tag`**: Promotes `beta` → `main`, bumps VERSION/CHANGELOG, tags `vX.Y.Z`, publishes release artifacts, and verifies install paths (`/bag-and-tag`).
+- **`lean-ci`**: Makes GitHub Actions CI fast and cheap without weakening required checks: right-stage jobs, affected-package tests, caches, artifact retention, measured before and after (`/lean-ci`).
 - **`qa-walkthrough`**: Runs an end-to-end UI and code QA pass and produces a severity-ranked report (`/qa-walkthrough`).
 - **`av-qa-walkthrough`**: Audits audio/video playback, sync, devices, and streams using `ffprobe` and `ffmpeg` evidence (`/av-qa-walkthrough`).
 - **`updater`**: Audits Cargo, npm, PyPI, RustSec, toolchains, GitHub Actions, WoW `.toc` versions, Minecraft releases, and model IDs via `skills/updater/scripts/updater.py` (`/updater`).
@@ -203,7 +204,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 ├── docs/                 # Usage guide, consumer install matrix, and CI policy
 ├── rules/                # Always-applied Cursor rule distributed with the plugin
 ├── scripts/              # Skill linter, token counter/checker, secret & PII guards, installers
-├── skills/               # 71 skill directories (each containing SKILL.md)
+├── skills/               # 72 skill directories (each containing SKILL.md)
 ├── tests/                # Python stdlib unittest suite for repo scripts
 ├── install.sh            # Checksum-verified release installer
 ├── requirements-ci.txt   # CI dependency for token counting (tiktoken==0.14.0)
