@@ -4,9 +4,37 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.6.0
+
+### Changed (skill strength over skill size)
+
+- Skill size is no longer capped. The 35%-of-upstream cap on ported skills, the 400-token cap on original skills, the no-growth rule and the `token-growth-approved` label are removed. `token-check` now fails only on a stale `tokens.json` and reports per-skill size deltas in the job summary.
+- Every skill ported from pstack is restored to full strength: the complete upstream procedure, examples, edge cases and stop conditions, adapted for all supported hosts, with every vstack-only rule kept. The old ports ran at about 25% to 35% of the upstream text.
+- `viper-mode` regains its full principle index (when each principle applies), the Autonomy rules and routing to every skill, and ships 22 task playbooks under `playbooks/`, the review-bot triage reference and the PR-watch and worktree-audit scripts.
+- `statechart` ships its rendering and model-checking scripts. `create-verification-skill`, `show-me-your-work` and `typescript-best-practices` ship their references and scripts.
+- vstack keeps its own model defaults: subagents inherit the parent model, and panels use one model unless the user asks for a multi-model pass.
+- The vstack-original skills written under the old 400-token cap are expanded into full procedure: `qa-walkthrough`, `av-qa-walkthrough`, `land-it` and `follow-through` gain setup steps, what to check in each pass, severity definitions, evidence rules and stop conditions, and the `optimize` and `elevate` playbooks spell out each step. Every existing rule is kept.
+
+### Added
+
+- The 10 upstream skills left out under the old budget: `automate-me`, `bro`, `make-bot-ui`, `no-comments`, `vstack-help` (from `poteto-help`), and the principles `encode-lessons-in-structure`, `exhaust-the-design-space`, `guard-the-context-window`, `laziness-protocol` and `migrate-callers-then-delete-legacy-apis`.
+- `arena`, a token-efficient port of pstack's design race: frame with a hidden rubric, fan out candidates, judge, pick a base, graft, verify. Candidates run on the parent model (`auto`) by default; other models and a cross-vendor judge only on a high-stakes ask. 371 tokens, 35% of upstream.
+
 ### Changed
 
-- Port pstack 0.15.48 small updates: add `/reframe` and `viper-mode/worker.md`; fold sharpen prototype/preference line; no-subagent `reflect`; fold why author/inference/gap wording (keep multi-source hunt); pin `UPSTREAM.json` to `9e278fe`.
+- `architect` routes large or contested designs to `arena` (no token growth; the parallel-sketch clause moved there).
+
+- `in-your-own-words` has a description that says when to use it (it was the single word "Goals.").
+- `lint_skills.py` fails when a skill's frontmatter `name` differs from its folder name.
+- `check_secrets.py` skips `node_modules` and `dist`, which are untracked build output.
+- Every workflow pins its actions to a commit, as `claude.yml` already did.
+- The root and Cursor plugin descriptions no longer say the skills are for Cursor agents only.
+- Port pstack 0.15.48 small updates: add a compressed `/reframe` (35% of upstream) and `viper-mode/worker.md`; fold sharpen prototype/preference line; no-subagent `reflect`; fold why author/inference/gap wording (keep multi-source hunt); pin `UPSTREAM.json` to `9e278fe`.
+
+### Fixed
+
+- `install.sh` and `scripts/install_for.sh` name the option when its value is missing, where they used to stop with "unbound variable".
+- `scripts/package_release.sh` packages only the files tracked at `HEAD` (`git archive`). It used to copy the working tree, so release archives from 1.2.0 to 1.5.0 carried `__pycache__` folders, and compiled Python files embed the build machine's absolute path.
 
 ## 1.5.0
 

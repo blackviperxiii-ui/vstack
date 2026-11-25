@@ -1,6 +1,9 @@
 name: pii-guard
 on:
+  # ready_for_review is listed so the required check reports when a draft is
+  # marked ready, as ci.yml does.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
   push:
     branches: [main, beta]
@@ -11,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Block personal info

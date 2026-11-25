@@ -1,5 +1,5 @@
 __pycache__/
 *.py[cod]
 dist/
-skills/stageshow/node_modules/
+node_modules/
 skills/stageshow/shots/

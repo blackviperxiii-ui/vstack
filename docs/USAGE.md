@@ -1,6 +1,6 @@
 # How and when to use vstack
 
-**Viper Stack (vstack)** is a small set of agent skills that make coding agents work with more rigor and fewer tokens. You keep the engineering habits (playbooks, principles, verify before claiming done) while defaulting to Auto or Composer 2.5 Standard so allowance lasts longer.
+**Viper Stack (vstack)** is a small set of agent skills that make coding agents work with more rigor, and spend fewer tokens because they get the work right the first time. You keep the engineering habits (playbooks, principles, verify before claiming done) while defaulting to Auto or Composer 2.5 Standard so allowance lasts longer.
 
 This repo is **blackviperxiii-ui/vstack**. It is actively maintained. Use **vstack**, not pstack.
 
@@ -20,7 +20,7 @@ Think of vstack as a playbook pack for your agent:
 
 1. **`viper-mode`** is the main router. It picks a playbook, builds a short todo list, applies principles (smallest fix, verify the real artifact, fix root causes), and uses subagents carefully so the parent chat stays short.
 2. Supporting skills cover setup (`setup-vstack`), restating goals (`in-your-own-words`), understanding code (`how`, `why`, `teach`, `recall`), design (`architect`, `figure-it-out`), review (`blast-radius`, `interrogate`), bugs (`tdd`), product feel (`land-it`), UI craft (`elevate`), performance (`optimize`), promote/release (`bag-and-tag`), app QA (`qa-walkthrough`, `av-qa-walkthrough`), and one `principle-*` skill per principle `viper-mode` cites.
-3. Repo tooling (`scripts/`, CI) keeps skills lean (token budgets) and safe (lint, secret scan). That tooling is for *maintaining* vstack; day-to-day *use* is loading the skills.
+3. Repo tooling (`scripts/`, CI) keeps skills well-formed and safe (lint, secret scan) and reports their size without capping it. That tooling is for *maintaining* vstack; day-to-day *use* is loading the skills.
 
 Credit for the method goes to Lauren Tan’s pstack. Naming and branding here are Viper Stack only.
 
@@ -46,7 +46,7 @@ Use vstack when the work needs deliberate engineering, not a one-line chat answe
 
 - Do **not** load or follow **pstack** / `poteto-mode` in repos that standardize on vstack.
 - Do not treat vstack as a product framework or runtime library. It is agent guidance, not app code.
-- Do not grow skill files for prose docs. Put how-to text in `docs/` (this file) so token checks stay green.
+- Do not put human-facing how-to prose in skill files; it goes in `docs/` (this file). Agent-facing procedure belongs in the skill, at whatever length does the job.
 - Skip the full orchestrator for trivial tasks where a short answer already meets the bar.
 
 ## Quick start
@@ -101,7 +101,7 @@ Expected agent behavior: load `viper-mode`, reproduce the failure, find the root
 /viper-mode Add a docs page that explains when to use vstack; link it from README
 ```
 
-Expected: docs-only change (no skill token growth), README link, local checks green, PR → `beta`.
+Expected: docs-only change, README link, local checks green, PR → `beta`.
 
 ### Example 3 — Consumer repo requiring vstack
 
@@ -173,4 +173,4 @@ User asks: “What does `UPSTREAM.json` map?” A direct read of the file is eno
 
 - [CONSUMING.md](CONSUMING.md) — Works-with matrix and install commands
 - [AGENTS.md](../AGENTS.md) — branch / PR / CI / verification rules for this repo
-- [README.md](../README.md) — install overview and upstream token policy
+- [README.md](../README.md) — install overview and upstream sync policy

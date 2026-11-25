@@ -11,7 +11,7 @@ Applies to Cursor, Claude Code, Codex, Antigravity, Muse Code, Windsurf/Cascade,
 1. **Must use vstack** for nontrivial work here: code, scripts, CI, docs that change agent behavior, reviews, and shipping. Load `skills/` before planning or editing; read `skills/viper-mode/SKILL.md` first.
 2. **How:** Follow `viper-mode` (playbook + principles + evidence). Use supporting skills as needed (`setup-vstack`, `in-your-own-words`, `how`, `why`, `architect`, `blast-radius`, `principle-*`, `qa-walkthrough`, `av-qa-walkthrough`). Prefer Auto / Composer 2.5 Standard; keep parent context short; verify before claiming done.
 3. **Never use pstack** (or `poteto-mode`) in this repo. Upstream pstack is tracked only via `UPSTREAM.json` and sync tooling — not as the active skill pack.
-4. **Do not grow skill files** for prose. Put usage guidance in `docs/USAGE.md` (and consumer install guidance in `docs/CONSUMING.md`) so token-check stays green.
+4. **Skills carry everything the agent needs to do the job right.** Procedure, edge cases, stop conditions and examples belong in the skill (long ones in the skill's `references/` or `playbooks/`). Never trim a skill to save tokens: a skill that prevents one wrong turn saves more than its length costs. Cut only what does not change what the agent does. Human-facing how-to text still goes in `docs/USAGE.md` and `docs/CONSUMING.md`.
 5. **RPE:** Always Research, Plan, then Execute; no edits before a written plan.
 
 Human-oriented how/when/examples: [docs/USAGE.md](docs/USAGE.md). Consumer install matrix: [docs/CONSUMING.md](docs/CONSUMING.md).
@@ -33,7 +33,7 @@ Human-oriented how/when/examples: [docs/USAGE.md](docs/USAGE.md). Consumer insta
 ## CI
 
 - **CI** runs on push and PR to `main` and `beta` (`lint`, `token-check`). PRs must be green before merge.
-- Preserve token-check and skill lint behavior; do not bypass without user approval (`token-growth-approved` label rules still apply on sync PRs per README).
+- `token-check` fails only when `tokens.json` is stale; regenerate it with `python3 scripts/count_tokens.py` whenever a `SKILL.md` changes. Skill size is reported, not capped. Do not add size limits back without user approval.
 
 ## Verification
 

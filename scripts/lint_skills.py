@@ -53,6 +53,17 @@ def lint_skill(path: Path) -> list[str]:
     return errors
 
 
+def lint_name_matches_dir(path: Path) -> list[str]:
+    """Hosts key a skill by its folder; a different frontmatter name hides it."""
+    match = FRONTMATTER_RE.match(path.read_text(encoding="utf-8"))
+    if not match:
+        return []
+    name = parse_simple_yaml_frontmatter(match.group(1)).get("name")
+    if name and name != path.parent.name:
+        return [f"{path}: frontmatter name '{name}' must match folder '{path.parent.name}'"]
+    return []
+
+
 def lint_upstream() -> list[str]:
     errors: list[str] = []
     if not UPSTREAM_PATH.is_file():
@@ -81,6 +92,7 @@ def main() -> int:
             skill_md = skill_dir / "SKILL.md"
             if skill_dir.is_dir() and skill_md.is_file():
                 errors.extend(lint_skill(skill_md))
+                errors.extend(lint_name_matches_dir(skill_md))
     if errors:
         for err in errors:
             print(err, file=sys.stderr)

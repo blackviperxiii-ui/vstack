@@ -57,6 +57,6 @@ installer (`npx claude-code-templates@latest`).
    step 2 still applies. If step 2 confirms a red-flag hit is benign prose,
    pass `--reviewed` to allow red-flag hits (hidden Unicode still blocks).
 4. If the hand-offs or safety rules changed, update the wrapper `SKILL.md`
-   (keep it under the 400-token cap) and `NOTICE.md`.
+   and `NOTICE.md`.
 5. Run the full local checks (`AGENTS.md`), add a `CHANGELOG.md` line naming
    the new commit, and open a PR into `beta`.

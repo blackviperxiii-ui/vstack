@@ -30,6 +30,9 @@ usage() {
 
 while [ $# -gt 0 ]; do
 	case "$1" in
+		--target|--version|--dir) [ $# -ge 2 ] || { echo "$1 needs a value" >&2; exit 1; } ;;
+	esac
+	case "$1" in
 		--target) target="$2"; shift 2 ;;
 		--version) version="${2#v}"; shift 2 ;;
 		--dir) dir="$2"; shift 2 ;;
