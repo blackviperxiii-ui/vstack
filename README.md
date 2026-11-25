@@ -20,7 +20,7 @@ Engineering playbooks, principles, and verification skills that make coding agen
 
 ## Overview
 
-**Viper Stack (`vstack`)** is a self-contained pack of 72 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or on rework.
+**Viper Stack (`vstack`)** is a self-contained pack of 73 `SKILL.md` playbooks and rules for AI coding agents. It adapts the engineering method from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan so agents keep strict engineering habits (Research-Plan-Execute, root-cause fixes, verifiable units, and runtime proof) without burning token allowances on heavy multi-model panels or on rework.
 
 Instead of defaulting to expensive frontier-model committees, `vstack` defaults parent sessions to **Auto** or **Composer 2.5 Standard**, delegates bulk reads to fresh subagents that inherit the parent model, and ships every skill at full strength, because an agent that follows a complete procedure spends fewer tokens than one that guesses and redoes the work.
 
