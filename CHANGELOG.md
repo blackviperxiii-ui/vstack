@@ -4,6 +4,8 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.6.0
+
 ### Changed (skill strength over skill size)
 
 - Skill size is no longer capped. The 35%-of-upstream cap on ported skills, the 400-token cap on original skills, the no-growth rule and the `token-growth-approved` label are removed. `token-check` now fails only on a stale `tokens.json` and reports per-skill size deltas in the job summary.
