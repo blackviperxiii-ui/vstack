@@ -4,6 +4,12 @@ All notable changes to vstack. Versions follow [semantic versioning](https://sem
 
 ## Unreleased
 
+## 1.7.0
+
+### Added
+
+- `lean-ci`: makes GitHub Actions CI fast and cheap without weakening required checks. Measure first, run each check at the right stage (PR gate, post-merge push, release and nightly), gate jobs with job-level `if:` so skipped required checks still report, test only the packages a diff reaches with a tested picker, share caches, cap artifact retention, and report before and after times. Includes a per-repo checklist and a worked Cargo affected-packages picker.
+
 ## 1.6.0
 
 ### Changed (skill strength over skill size)
