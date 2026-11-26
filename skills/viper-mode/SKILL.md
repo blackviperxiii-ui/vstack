@@ -37,6 +37,7 @@ The remaining triggers live only here:
 - PR status → the **Babysit** playbook, not a host's built-in babysit skill. Landing a green stack → the **Shipping** playbook. Promote beta to main, tag and release → **bag-and-tag**, only on an explicit user ask.
 - Bot review comments → judge each on its merits (`references/bugbot-triage.md`).
 - Long or unattended work → **show-me-your-work**.
+- Tool, script, or skill fails unexpectedly, or the same approach burns more than 2 retries → **log-papercut** (always-on escape hatch; append once, then change approach).
 - No playbook fits → **figure-it-out**.
 
 Apply this rigor to nontrivial code, architecture, ambiguous forks, data modeling, multi-step work, docs, reviews, shipping, benchmarks and long runs. A one-line answer or a trivial edit does not need the full playbook.

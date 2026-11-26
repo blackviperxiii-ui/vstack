@@ -28,7 +28,7 @@ Instead of defaulting to expensive frontier-model committees, `vstack` defaults 
 
 - **Playbook routing (`viper-mode`)**: Routes nontrivial tasks through Research-Plan-Execute (RPE), builds a task list, cites engineering principles per decision, and requires observable verification before claiming work is done.
 - **Token-conscious defaults**: Uses `auto` (inherit parent) for subagents, medium or small reasoning budgets, single-model sequential reviews unless high-stakes work is requested, and concise summaries in the parent context window.
-- **73 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), CI speed and cost (`lean-ci`), test-suite speed without losing coverage (`lean-tests`), dependency and surface maintenance (`updater`), 22 task playbooks under `viper-mode/playbooks/`, and 24 `principle-*` skills.
+- **74 focused skills**: Covers code comprehension (`how`, `why`, `teach`, `recall`), design (`architect`, `arena`, `statechart`, `stageshow`, `elevate`, `database-architect`), web platform guidance (`modern-web-guidance`, `chrome-extensions`), adversarial review (`blast-radius`, `interrogate`), full-app QA (`qa-walkthrough`, `av-qa-walkthrough`, `land-it`), performance (`optimize`), promote/release (`bag-and-tag`), CI speed and cost (`lean-ci`), test-suite speed without losing coverage (`lean-tests`), dependency and surface maintenance (`updater`), 22 task playbooks under `viper-mode/playbooks/`, and 24 `principle-*` skills.
 - **Multi-agent packaging**: Ships Cursor ([`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json)), root Agent Plugins ([`plugin.json`](plugin.json)), and Claude Code ([`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)) manifests, plus installers for portable `.agents/skills/` and `.grok/skills/` layouts. Cursor Projects: see [`docs/CONSUMING.md`](docs/CONSUMING.md).
 - **Size reported, never capped**: Tracks `cl100k_base` token counts in [`tokens.json`](tokens.json) and shows per-skill deltas on pull requests. No skill is trimmed to fit a budget.
 
@@ -146,6 +146,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 - **`figure-it-out`**: Designs a short, auditable playbook when no standard playbook fits (`/figure-it-out`).
 - **`follow-through`**: Maintains a task ledger with check-ins, stall detection, and proven completion (`/follow-through`).
 - **`show-me-your-work`**: Records an append-only TSV decision trail during long or unattended runs (`/show-me-your-work`).
+- **`log-papercut`**: Appends one structured JSONL papercut when a tool, script, or skill fails unexpectedly or burns more than 2 retries (`/log-papercut`).
 - **`tdd`**: Starts with a failing test when the test harness is fast and cheap (`/tdd`).
 - **`blast-radius`**: Traces what a change can break beyond the diff and proves safety by running code (`/blast-radius`).
 - **`interrogate`**: Runs an adversarial review where only run-proven findings survive (`/interrogate`).
@@ -205,7 +206,7 @@ See [`docs/USAGE.md`](docs/USAGE.md) for concrete workflows (`/viper-mode`, `/la
 ├── docs/                 # Usage guide, consumer install matrix, and CI policy
 ├── rules/                # Always-applied Cursor rule distributed with the plugin
 ├── scripts/              # Skill linter, token counter/checker, secret & PII guards, installers
-├── skills/               # 73 skill directories (each containing SKILL.md)
+├── skills/               # 74 skill directories (each containing SKILL.md)
 ├── tests/                # Python stdlib unittest suite for repo scripts
 ├── install.sh            # Checksum-verified release installer
 ├── requirements-ci.txt   # CI dependency for token counting (tiktoken==0.14.0)
