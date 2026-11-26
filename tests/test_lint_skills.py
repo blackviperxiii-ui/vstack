@@ -16,7 +16,11 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import lint_skills  # noqa: E402
 from lint_skills import (  # noqa: E402
+    lint_mcp_json,
+    lint_procedural,
+    lint_retry_filler,
     lint_skill,
+    lint_skill_length,
     lint_upstream,
     parse_simple_yaml_frontmatter,
 )
@@ -213,6 +217,243 @@ class LintSkillsMainTest(TempDirTestCase):
             mock.patch("sys.stderr", new_callable=io.StringIO),
         ):
             self.assertEqual(lint_skills.main(), 1)
+
+
+class SkillQualityTest(TempDirTestCase):
+    FRONT = "---\nname: demo\ndescription: ok\n---\n"
+
+    def write_lines(self, count: int) -> Path:
+        header_lines = self.FRONT.splitlines()
+        extra = count - len(header_lines)
+        body = "\n".join("body" for _ in range(extra))
+        text = self.FRONT + (body + "\n" if extra else "")
+        path = self.write("SKILL.md", text)
+        self.assertEqual(len(path.read_text(encoding="utf-8").splitlines()), count)
+        return path
+
+    def skill(self, name: str, body: str) -> Path:
+        path = self.tmp / name / "SKILL.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body, encoding="utf-8")
+        return path
+
+    def test_fails_when_skill_has_500_lines(self) -> None:
+        path = self.write_lines(500)
+        errors = lint_skill_length(path)
+        self.assertEqual(errors, [f"{path}: SKILL.md has 500 lines, limit is 499"])
+
+    def test_passes_when_skill_has_499_lines(self) -> None:
+        path = self.write_lines(499)
+        self.assertEqual(lint_skill_length(path), [])
+
+    def test_fails_when_mcp_json_present(self) -> None:
+        skill = self.tmp / "skills" / "demo"
+        skill.mkdir(parents=True)
+        skill.joinpath("SKILL.md").write_text(
+            self.FRONT + "\n# Demo\n", encoding="utf-8"
+        )
+        mcp = skill / ".mcp.json"
+        mcp.write_text("{}\n", encoding="utf-8")
+        upstream = self.write("UPSTREAM.json", json.dumps(LintUpstreamTest.VALID))
+        with (
+            mock.patch.object(lint_skills, "SKILLS_DIR", self.tmp / "skills"),
+            mock.patch.object(lint_skills, "UPSTREAM_PATH", upstream),
+            mock.patch("sys.stderr", new_callable=io.StringIO) as err,
+        ):
+            self.assertEqual(lint_skills.main(), 1)
+        self.assertIn(f"{mcp}: skill directory must not contain .mcp.json", err.getvalue())
+
+    def test_passes_when_mcp_json_absent(self) -> None:
+        skill = self.tmp / "skills" / "demo"
+        skill.mkdir(parents=True)
+        skill.joinpath("SKILL.md").write_text(
+            self.FRONT + "\n# Demo\n", encoding="utf-8"
+        )
+        self.assertEqual(lint_mcp_json(skill), [])
+
+    def test_fails_when_try_again_is_in_recovery(self) -> None:
+        for phrase in ("try again", "retry again", "just retry"):
+            with self.subTest(phrase=phrase):
+                path = self.skill(
+                    "demo",
+                    self.FRONT
+                    + "\n# Demo\n\n## Error recovery\n\n"
+                    + f"If the command fails, {phrase}.\n",
+                )
+                errors = lint_retry_filler(path)
+                self.assertEqual(
+                    errors,
+                    [
+                        f"{path}: low-signal retry filler {phrase!r} in an error-recovery section"
+                    ],
+                )
+
+    def test_passes_when_try_again_is_outside_recovery(self) -> None:
+        path = self.skill(
+            "demo",
+            self.FRONT
+            + "\n# Demo\n\ntry again is narration here, not a fix.\n\n"
+            + "## Error recovery\n\nRead the error text and fix the command.\n",
+        )
+        self.assertEqual(lint_retry_filler(path), [])
+
+    def test_fails_when_procedural_skill_misses_steps(self) -> None:
+        path = self.skill(
+            "demo",
+            self.FRONT
+            + """
+# Demo
+
+## Workflow
+
+- Read the skill file.
+- Update the lint script.
+
+```bash
+python3 scripts/lint_skills.py
+```
+
+## Error recovery
+
+Fix the skill named in the error, then rerun the command.
+""",
+        )
+        self.assertEqual(
+            lint_procedural(path),
+            [f"{path}: procedural skill needs numbered single-goal steps"],
+        )
+
+    def test_fails_when_procedural_skill_misses_verification(self) -> None:
+        path = self.skill(
+            "demo",
+            self.FRONT
+            + """
+# Demo
+
+## Workflow
+
+1. Read the skill file.
+2. Update the lint script.
+
+## Error recovery
+
+Fix the skill named in the error, then rerun the command.
+""",
+        )
+        self.assertEqual(
+            lint_procedural(path),
+            [f"{path}: procedural skill needs a concrete command or verifiable check"],
+        )
+
+    def test_fails_when_procedural_skill_misses_recovery(self) -> None:
+        path = self.skill(
+            "demo",
+            self.FRONT
+            + """
+# Demo
+
+## Workflow
+
+1. Read the skill file.
+2. Update the lint script.
+
+```bash
+python3 scripts/lint_skills.py
+```
+""",
+        )
+        self.assertEqual(
+            lint_procedural(path),
+            [f"{path}: procedural skill needs an error-recovery section"],
+        )
+
+    def test_passes_compliant_procedural_skill(self) -> None:
+        path = self.skill(
+            "demo",
+            self.FRONT
+            + """
+# Demo
+
+## Workflow
+
+1. Read the skill file.
+2. Update the lint script.
+
+```bash
+python3 scripts/lint_skills.py
+```
+
+Verify: the command prints `lint OK`.
+
+## Error recovery
+
+Fix the skill named in the error, then rerun the command.
+""",
+        )
+        self.assertEqual(lint_skill_length(path), [])
+        self.assertEqual(lint_retry_filler(path), [])
+        self.assertEqual(lint_procedural(path), [])
+        self.assertEqual(lint_mcp_json(path.parent), [])
+
+    def test_short_principle_skips_procedural_checks(self) -> None:
+        path = self.skill(
+            "principle-demo",
+            "---\nname: principle-demo\ndescription: ok\n---\n\n"
+            "# Principle\n\n## Workflow\n\n- Do one thing.\n",
+        )
+        self.assertEqual(lint_procedural(path), [])
+
+    def test_vendored_skill_skips_procedural_checks(self) -> None:
+        path = self.skill(
+            "wrapped",
+            self.FRONT + "\n# Wrapped\n\n## Workflow\n\n- Do one thing.\n",
+        )
+        (path.parent / "VENDORED.json").write_text("{}\n", encoding="utf-8")
+        self.assertEqual(lint_procedural(path), [])
+
+    def test_legacy_exempt_must_shrink_when_skill_passes(self) -> None:
+        path = self.skill(
+            "demo",
+            self.FRONT
+            + """
+# Demo
+
+## Workflow
+
+1. Read the skill file.
+2. Update the lint script.
+
+```bash
+python3 scripts/lint_skills.py
+```
+
+## Error recovery
+
+Fix the skill named in the error, then rerun the command.
+""",
+        )
+        with mock.patch.object(lint_skills, "LEGACY_EXEMPT", frozenset({"demo"})):
+            errors = lint_procedural(path)
+        self.assertEqual(
+            errors,
+            [f"{path}: remove 'demo' from LEGACY_EXEMPT (procedural checks pass)"],
+        )
+
+    def test_log_papercut_passes_quality_gates(self) -> None:
+        path = REPO_ROOT / "skills" / "log-papercut" / "SKILL.md"
+        self.assertEqual(lint_skill_length(path), [])
+        self.assertEqual(lint_retry_filler(path), [])
+        self.assertEqual(lint_procedural(path), [])
+        self.assertEqual(lint_mcp_json(path.parent), [])
+
+    def test_real_tree_lints(self) -> None:
+        with (
+            mock.patch("sys.stdout", new_callable=io.StringIO) as out,
+            mock.patch("sys.stderr", new_callable=io.StringIO) as err,
+        ):
+            code = lint_skills.main()
+        self.assertEqual(code, 0, err.getvalue())
+        self.assertIn("lint OK", out.getvalue())
 
 
 if __name__ == "__main__":
